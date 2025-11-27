@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#FF6B35">
+    <title>ALISHASHOP Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; overscroll-behavior: none; }
+        .gradient-orange { background: linear-gradient(135deg, #FF6B35 0%, #FF1493 100%); }
+        .gradient-blue { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); }
+        .gradient-green { background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); }
+        .gradient-purple { background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%); }
+        .gradient-red { background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%); }
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slide-down { animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-scale { transition: transform 0.1s ease; }
+        .animate-scale:active { transform: scale(0.95); }
+        .bottom-nav-safe { padding-bottom: env(safe-area-inset-bottom); }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        const formatCurrency = (amount) => new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+        const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        const playAlertSound = () => {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.5);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) { console.log('Son non disponible'); }
+        };
+        
+        const getLast8Days = () => {
+            const days = [];
+            const today = new Date();
+            for (let i = 0; i < 8; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                date.setHours(0, 0, 0, 0);
+                days.push(date);
+            }
+            return days;
+        };
+        
+        const formatDate = (date) => {
+            const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+            const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+            return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
+        };
+        
+        const STORAGE_KEYS = {
+            PRODUCTS: 'alishashop_products',
+            TRANSACTIONS: 'alishashop_transactions',
+            USERS: 'alishashop_users',
+            SERVICES: 'alishashop_services'
+        };
+        
+        const StorageManager = {
+            save: (key, data) => {
+                try { localStorage.setItem(key, JSON.stringify(data)); return true; }
+                catch (e) { console.error('Erreur sauvegarde:', e); return false; }
+            },
+            load: (key, defaultValue = null) => {
+                try {
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : defaultValue;
+                } catch (e) { return defaultValue; }
+            },
+            exportData: () => {
+                const data = {
+                    products: StorageManager.load(STORAGE_KEYS.PRODUCTS, []),
+                    transactions: StorageManager.load(STORAGE_KEYS.TRANSACTIONS, []),
+                    users: StorageManager.load(STORAGE_KEYS.USERS, []),
+                    services: StorageManager.load(STORAGE_KEYS.SERVICES, []),
+                    exportDate: new Date().toISOString()
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `alishashop-backup-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        };const INITIAL_PRODUCTS = [
+            { id: 'P001', name: 'Ecouteurs Bluetooth', stock: 12, price: 3500, category: 'High-Tech' },
+            { id: 'P002', name: 'Câble USB Type-C', stock: 25, price: 1500, category: 'High-Tech' },
+            { id: 'P003', name: 'Clé USB 32GB', stock: 4, price: 4500, category: 'High-Tech' },
+            { id: 'P004', name: 'Rame Papier A4', stock: 3, price: 3500, category: 'Bureautique' },
+            { id: 'P005', name: 'Stylo Bleu', stock: 50, price: 100, category: 'Bureautique' }
+        ];
+        
+        const INITIAL_USERS = [
+            { id: 'U001', name: 'Administrateur', pin: '1234', role: 'admin' },
+            { id: 'U002', name: 'Caissier 1', pin: '0000', role: 'staff' }
+        ];
+        
+        const INITIAL_SERVICES = [
+            { id: 'S001', name: 'Photocopie N&B', price: 50, category: 'office' },
+            { id: 'S002', name: 'Photocopie Couleur', price: 100, category: 'office' },
+            { id: 'S003', name: 'Impression', price: 100, category: 'office' },
+            { id: 'S004', name: 'Plastification', price: 500, category: 'office' },
+            { id: 'S005', name: 'Reliure', price: 1000, category: 'office' },
+            { id: 'S006', name: 'Scanner', price: 200, category: 'office' },
+            { id: 'S007', name: "Photo d'identité", price: 2000, category: 'office' }
+        ];
+        
+        const initializeData = () => {
+            if (!StorageManager.load(STORAGE_KEYS.PRODUCTS)) {
+                StorageManager.save(STORAGE_KEYS.PRODUCTS, INITIAL_PRODUCTS);
+            }
+            if (!StorageManager.load(STORAGE_KEYS.USERS)) {
+                StorageManager.save(STORAGE_KEYS.USERS, INITIAL_USERS);
+            }
+            if (!StorageManager.load(STORAGE_KEYS.SERVICES)) {
+                StorageManager.save(STORAGE_KEYS.SERVICES, INITIAL_SERVICES);
+            }
+            if (!StorageManager.load(STORAGE_KEYS.TRANSACTIONS)) {
+                StorageManager.save(STORAGE_KEYS.TRANSACTIONS, []);
+            }
+        };
+        
+        const Toast = ({ message, type = 'success', onClose }) => {
+            useEffect(() => {
+                const timer = setTimeout(onClose, 4000);
+                return () => clearTimeout(timer);
+            }, [onClose]);
+            
+            const colors = { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-orange-500', info: 'bg-blue-500' };
+            const icons = { success: 'check-circle', error: 'x-circle', warning: 'alert-triangle', info: 'info' };
+            
+            return (
+                <div className={`${colors[type]} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-slide-down`}>
+                    <i data-lucide={icons[type]} className="w-6 h-6"></i>
+                    <span className="flex-1 font-semibold">{message}</span>
+                    <button onClick={onClose} className="p-1">
+                        <i data-lucide="x" className="w-5 h-5"></i>
+                    </button>
+                </div>
+            );
+        };
+        
+        const ConfirmModal = ({ title, message, amount, onConfirm, onCancel, isWarning = false }) => {
+            return (
+                <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl">
+                        <div className="flex flex-col items-center text-center">
+                            <div className={`w-20 h-20 rounded-full ${isWarning ? 'bg-red-100' : 'bg-green-100'} flex items-center justify-center mb-4`}>
+                                <i data-lucide={isWarning ? 'alert-triangle' : 'shield-check'} className={`w-10 h-10 ${isWarning ? 'text-red-500' : 'text-green-500'}`}></i>
+                            </div>
+                            <h3 className="text-2xl font-black mb-2">{title}</h3>
+                            <p className="text-gray-600 mb-2">{message}</p>
+                            {amount && (
+                                <div className={`text-3xl font-black ${isWarning ? 'text-red-600' : 'text-green-600'} mb-6`}>
+                                    {formatCurrency(amount)}
+                                </div>
+                            )}
+                            <div className="flex gap-3 w-full mt-4">
+                                <button onClick={onCancel} className="flex-1 py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold animate-scale">
+                                    Annuler
+                                </button>
+                                <button onClick={onConfirm} className={`flex-1 py-4 text-white rounded-2xl font-bold animate-scale ${isWarning ? 'gradient-red' : 'gradient-green'}`}>
+                                    Confirmer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        const LoginScreen = ({ onLogin }) => {
+            const [selectedUser, setSelectedUser] = useState(null);
+            const [pin, setPin] = useState('');
+            const [error, setError] = useState('');
+            const [users, setUsers] = useState([]);
+            
+            useEffect(() => {
+                const loadedUsers = StorageManager.load(STORAGE_KEYS.USERS, []);
+                setUsers(loadedUsers);
+            }, []);
+            
+            useEffect(() => { lucide.createIcons(); });
+            
+            const handleNumberClick = (num) => {
+                if (pin.length < 4) {
+                    const newPin = pin + num;
+                    setPin(newPin);
+                    if (newPin.length === 4) {
+                        setTimeout(() => {
+                            if (selectedUser && selectedUser.pin === newPin) {
+                                onLogin(selectedUser);
+                            } else {
+                                setError('Code PIN incorrect');
+                                setPin('');
+                                setTimeout(() => setError(''), 2000);
+                            }
+                        }, 100);
+                    }
+                }
+            };
+            
+            const handleDelete = () => {
+                setPin(pin.slice(0, -1));
+                setError('');
+            };
+            
+            return (
+                <div className="min-h-screen gradient-orange flex flex-col items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl">
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="w-24 h-24 gradient-orange rounded-3xl flex items-center justify-center shadow-xl mb-4">
+                                <span className="text-white text-5xl font-black">A</span>
+                            </div>
+                            <h1 className="text-3xl font-black gradient-orange bg-clip-text text-transparent">ALISHASHOP</h1>
+                            <p className="text-gray-500 text-sm">Manager</p>
+                        </div>
+                        
+                        {!selectedUser ? (
+                            <div>
+                                <p className="text-center text-gray-600 mb-4 font-semibold">Sélectionnez votre profil</p>
+                                <div className="space-y-3">
+                                    {users.map(user => (
+                                        <button key={user.id} onClick={() => setSelectedUser(user)}
+                                            className="w-full p-4 bg-gradient-to-r from-orange-50 to-pink-50 rounded-2xl flex items-center gap-3 hover:shadow-lg transition-all animate-scale">
+                                            <div className="w-12 h-12 gradient-orange rounded-xl flex items-center justify-center">
+                                                <i data-lucide={user.role === 'admin' ? 'crown' : 'user'} className="text-white w-6 h-6"></i>
+                                            </div>
+                                            <div className="text-left flex-1">
+                                                <p className="font-bold text-gray-800">{user.name}</p>
+                                                <p className="text-xs text-gray-500 capitalize">{user.role === 'admin' ? 'Gérant' : 'Caissier'}</p>
+                                            </div>
+                                            <i data-lucide="chevron-right" className="text-gray-400 w-5 h-5"></i>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="flex items-center gap-3 mb-6 p-4 bg-gray-50 rounded-2xl">
+                                    <div className="w-12 h-12 gradient-orange rounded-xl flex items-center justify-center">
+                                        <i data-lucide={selectedUser.role === 'admin' ? 'crown' : 'user'} className="text-white w-6 h-6"></i>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-bold text-gray-800">{selectedUser.name}</p>
+                                        <p className="text-xs text-gray-500 capitalize">{selectedUser.role === 'admin' ? 'Gérant' : 'Caissier'}</p>
+                                    </div>
+                                    <button onClick={() => { setSelectedUser(null); setPin(''); setError(''); }} className="p-2">
+                                        <i data-lucide="x" className="text-gray-400 w-5 h-5"></i>
+                                    </button>
+                                </div>
+                                <div className="mb-6">
+                                    <p className="text-center text-gray-600 mb-4 font-semibold">Entrez votre code PIN</p>
+                                    <div className="flex justify-center gap-3 mb-2">
+                                        {[0, 1, 2, 3].map(i => (
+                                            <div key={i} className={`w-14 h-14 rounded-2xl flex items-center justify-center ${pin.length > i ? 'gradient-orange' : 'bg-gray-200'}`}>
+                                                {pin.length > i && <div className="w-4 h-4 bg-white rounded-full"></div>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {error && <p className="text-center text-red-500 text-sm font-semibold">{error}</p>}
+                                </div>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                                        <button key={num} onClick={() => handleNumberClick(num.toString())}
+                                            className="h-16 bg-gray-100 rounded-2xl text-2xl font-bold hover:bg-gray-200 animate-scale">
+                                            {num}
+                                        </button>
+                                    ))}
+                                    <div></div>
+                                    <button onClick={() => handleNumberClick('0')} className="h-16 bg-gray-100 rounded-2xl text-2xl font-bold hover:bg-gray-200 animate-scale">0</button>
+                                    <button onClick={handleDelete} className="h-16 bg-red-100 rounded-2xl flex items-center justify-center hover:bg-red-200 animate-scale">
+                                        <i data-lucide="delete" className="text-red-600 w-6 h-6"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };const Header = ({ user, currentView, onBack }) => {
+            useEffect(() => { lucide.createIcons(); });
+            return (
+                <div className="bg-white shadow-md px-4 py-3 flex items-center gap-3 sticky top-0 z-40">
+                    {currentView !== 'dashboard' && (
+                        <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-xl animate-scale">
+                            <i data-lucide="arrow-left" className="w-6 h-6 text-gray-700"></i>
+                        </button>
+                    )}
+                    <div className="w-10 h-10 gradient-orange rounded-xl flex items-center justify-center">
+                        <span className="text-white text-xl font-black">A</span>
+                    </div>
+                    <div className="flex-1">
+                        <h1 className="font-black text-lg gradient-orange bg-clip-text text-transparent">ALISHASHOP</h1>
+                        <p className="text-xs text-gray-500">Manager</p>
+                    </div>
+                    <div className="text-right">
+                        <span className={`text-xs font-bold px-2 py-1 rounded-lg ${user.role === 'admin' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+                            {user.role === 'admin' ? 'Gérant' : 'Caissier'}
+                        </span>
+                        <p className="text-xs text-gray-600 font-semibold mt-1">{user.name}</p>
+                    </div>
+                </div>
+            );
+        };
+        
+        const BottomNav = ({ currentView, onNavigate }) => {
+            useEffect(() => { lucide.createIcons(); });
+            const navItems = [
+                { id: 'dashboard', icon: 'home', label: 'Accueil' },
+                { id: 'sales', icon: 'shopping-cart', label: 'Vente' },
+                { id: 'services', icon: 'smartphone', label: 'Services' },
+                { id: 'stock', icon: 'package', label: 'Stock' },
+                { id: 'reports', icon: 'file-text', label: 'Rapports' }
+            ];
+            return (
+                <div className="bg-white border-t border-gray-200 px-2 py-2 bottom-nav-safe fixed bottom-0 left-0 right-0 z-40">
+                    <div className="flex justify-around">
+                        {navItems.map(item => (
+                            <button key={item.id} onClick={() => onNavigate(item.id)}
+                                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all ${
+                                    currentView === item.id ? 'bg-orange-50 shadow-lg scale-105' : 'hover:bg-gray-50'
+                                }`}>
+                                <i data-lucide={item.icon} className={`w-6 h-6 ${currentView === item.id ? 'text-orange-500' : 'text-gray-400'}`}></i>
+                                {currentView === item.id && <span className="text-xs font-bold text-orange-500">{item.label}</span>}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+        
+        const Dashboard = ({ user, onNavigate, onLogout }) => {
+            useEffect(() => { lucide.createIcons(); });
+            const cards = [
+                { id: 'sales', title: 'Boutique', desc: 'Vendre des produits', icon: 'shopping-cart', gradient: 'gradient-orange' },
+                { id: 'services', title: 'Services', desc: 'Mobile Money & Plus', icon: 'smartphone', gradient: 'gradient-blue' },
+                { id: 'stock', title: 'Stock', desc: "Gérer l'inventaire", icon: 'package', gradient: 'gradient-purple' },
+                { id: 'reports', title: 'Rapports', desc: "Voir l'activité", icon: 'file-text', gradient: 'gradient-green' }
+            ];
+            return (
+                <div className="p-4 pb-24 animate-slide-up">
+                    <div className="mb-6">
+                        <h2 className="text-3xl font-black text-gray-800 mb-1">Bonjour, {user.name.split(' ')[0]} 👋</h2>
+                        <p className="text-gray-500">Que souhaitez-vous faire aujourd'hui ?</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                        {cards.map(card => (
+                            <button key={card.id} onClick={() => onNavigate(card.id)}
+                                className="bg-white rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all animate-scale">
+                                <div className={`w-16 h-16 ${card.gradient} rounded-2xl flex items-center justify-center mb-4 shadow-xl`}>
+                                    <i data-lucide={card.icon} className="w-8 h-8 text-white"></i>
+                                </div>
+                                <h3 className="font-black text-lg text-gray-800 mb-1">{card.title}</h3>
+                                <p className="text-xs text-gray-500">{card.desc}</p>
+                            </button>
+                        ))}
+                    </div>
+                    <div className="bg-white rounded-3xl p-6 shadow-lg">
+                        <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                            <i data-lucide="settings" className="w-5 h-5"></i>
+                            Paramètres
+                        </h3>
+                        <div className="space-y-3">
+                            <button onClick={() => StorageManager.exportData()}
+                                className="w-full p-4 bg-green-50 rounded-2xl flex items-center gap-3 hover:bg-green-100 animate-scale">
+                                <i data-lucide="download" className="text-green-600 w-5 h-5"></i>
+                                <span className="flex-1 text-left font-semibold text-gray-700">Exporter les données</span>
+                            </button>
+                            <button onClick={onLogout}
+                                className="w-full p-4 bg-red-50 rounded-2xl flex items-center gap-3 hover:bg-red-100 animate-scale">
+                                <i data-lucide="log-out" className="text-red-600 w-5 h-5"></i>
+                                <span className="flex-1 text-left font-semibold text-gray-700">Déconnexion</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        const SimpleSalesModule = ({ user, onShowToast }) => {
+            const [products, setProducts] = useState([]);
+            const [selectedProduct, setSelectedProduct] = useState(null);
+            const [quantity, setQuantity] = useState(1);
+            const [showConfirm, setShowConfirm] = useState(false);
+            
+            useEffect(() => {
+                const loadedProducts = StorageManager.load(STORAGE_KEYS.PRODUCTS, []);
+                setProducts(loadedProducts);
+                lucide.createIcons();
+            }, []);
+            
+            const confirmSale = () => {
+                const updatedProducts = products.map(p => p.id === selectedProduct.id ? { ...p, stock: p.stock - quantity } : p);
+                StorageManager.save(STORAGE_KEYS.PRODUCTS, updatedProducts);
+                const transaction = {
+                    id: generateId('TX'), type: 'SALE', description: `${selectedProduct.name} (x${quantity})`,
+                    amount: selectedProduct.price * quantity, flow: 'IN', quantity, timestamp: Date.now(),
+                    relatedId: selectedProduct.id, performerName: user.name
+                };
+                const transactions = StorageManager.load(STORAGE_KEYS.TRANSACTIONS, []);
+                transactions.push(transaction);
+                StorageManager.save(STORAGE_KEYS.TRANSACTIONS, transactions);
+                const newStock = selectedProduct.stock - quantity;
+                if (newStock <= 4) {
+                    playAlertSound();
+                    onShowToast(`Vente Validée - Stock Critique: ${newStock}`, 'warning');
+                } else {
+                    onShowToast(`Vente Validée - Stock: ${newStock}`, 'success');
+                }
+                setShowConfirm(false);
+                setSelectedProduct(null);
+                setQuantity(1);
+                setProducts(updatedProducts);
+            };
+            
+            return (
+                <div className="p-4 pb-24 animate-slide-up">
+                    <div className="bg-white rounded-3xl p-6 shadow-lg">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-12 h-12 gradient-orange rounded-xl flex items-center justify-center">
+                                <i data-lucide="shopping-cart" className="w-6 h-6 text-white"></i>
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-black text-gray-800">Vente Boutique</h2>
+                                <p className="text-sm text-gray-500">Encaisser une vente</p>
+                            </div>
+                        </div>
+                        <select value={selectedProduct?.id || ''} onChange={(e) => {
+                            const product = products.find(p => p.id === e.target.value);
+                            setSelectedProduct(product);
+                            setQuantity(1);
+                        }} className="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-2xl font-semibold mb-6">
+                            <option value="">Sélectionner un produit</option>
+                            {products.map(p => <option key={p.id} value={p.id}>{p.name} - {formatCurrency(p.price)} (Stock: {p.stock})</option>)}
+                        </select>
+                        {selectedProduct && (
+                            <>
+                                <div className="bg-gradient-to-r from-orange-50 to-pink-50 rounded-2xl p-4 mb-6">
+                                    <div className="flex justify-between mb-2">
+                                        <span className="text-sm text-gray-600 font-semibold">Prix unitaire</span>
+                                        <span className="text-xl font-black text-orange-600">{formatCurrency(selectedProduct.price)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600 font-semibold">Stock disponible</span>
+                                        <span className={`text-lg font-black ${selectedProduct.stock <= 4 ? 'text-red-600' : 'text-green-600'}`}>{selectedProduct.stock}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 mb-6">
+                                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        className="w-14 h-14 bg-gray-200 rounded-2xl font-black text-2xl animate-scale">-</button>
+                                    <input type="number" value={quantity} onChange={(e) => {
+                                        const val = parseInt(e.target.value) || 1;
+                                        if (val >= 1 && val <= selectedProduct.stock) setQuantity(val);
+                                    }} className="flex-1 text-center text-3xl font-black p-4 bg-gray-50 rounded-2xl border-2"/>
+                                    <button onClick={() => quantity < selectedProduct.stock && setQuantity(quantity + 1)}
+                                        className="w-14 h-14 bg-gray-200 rounded-2xl font-black text-2xl animate-scale">+</button>
+                                </div>
+                                <div className="bg-gray-900 rounded-3xl p-6 mb-6">
+                                    <p className="text-gray-400 text-sm font-semibold mb-2">TOTAL</p>
+                                    <p className="text-white text-4xl font-black">{formatCurrency(selectedProduct.price * quantity)}</p>
+                                </div>
+                                <button onClick={() => quantity <= selectedProduct.stock ? setShowConfirm(true) : onShowToast('Stock insuffisant', 'error')}
+                                    className="w-full py-5 gradient-green text-white rounded-2xl font-black text-lg shadow-xl animate-scale">ENCAISSER</button>
+                            </>
+                        )}
+                    </div>
+                    {showConfirm && <ConfirmModal title="Confirmer" message={`${selectedProduct.name} (x${quantity})`}
+                        amount={selectedProduct.price * quantity} onConfirm={confirmSale} onCancel={() => setShowConfirm(false)}/>}
+                </div>
+            );
+        };
+        
+        const SimpleServicesModule = ({ user, onShowToast }) => {
+            const [tab, setTab] = useState('finance');
+            const [showConfirm, setShowConfirm] = useState(false);
+            const [service, setService] = useState(null);
+            useEffect(() => { lucide.createIcons(); }, [tab]);
+            
+            const confirmService = () => {
+                const transaction = { id: generateId('TX'), type: service.type, description: service.description,
+                    amount: service.amount, flow: service.flow, timestamp: Date.now(), performerName: user.name };
+                const transactions = StorageManager.load(STORAGE_KEYS.TRANSACTIONS, []);
+                transactions.push(transaction);
+                StorageManager.save(STORAGE_KEYS.TRANSACTIONS, transactions);
+                onShowToast('Opération Réussie', 'success');
+                setShowConfirm(false);
+                setService(null);
+            };
+            
+            const FinanceTab = () => {
+                const [op, setOp] = useState('');
+                const [type, setType] = useState('');
+                const [amt, setAmt] = useState('');
+                return (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3">
+                            {['Wave', 'Orange Money', 'Free Money', 'Wizall'].map(o => (
+                                <button key={o} onClick={() => setOp(o)}
+                                    className={`p-4 rounded-2xl font-bold ${op === o ? 'bg-blue-500 text-white' : 'bg-gray-100'}`}>{o}</button>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button onClick={() => setType('DÉPÔT')}
+                                className={`p-4 rounded-2xl font-bold ${type === 'DÉPÔT' ? 'gradient-green text-white' : 'bg-gray-100'}`}>DÉPÔT</button>
+                            <button onClick={() => setType('RETRAIT')}
+                                className={`p-4 rounded-2xl font-bold ${type === 'RETRAIT' ? 'gradient-red text-white' : 'bg-gray-100'}`}>RETRAIT</button>
+                        </div>
+                        <input type="number" value={amt} onChange={(e) => setAmt(e.target.value)} placeholder="Montant"
+                            className="w-full p-4 text-2xl font-black bg-gray-50 border-2 rounded-2xl"/>
+                        <button onClick={() => {
+                            if (op && type && amt > 0) {
+                                setService({ type: 'MONEY_TRANSFER', description: `${type} - ${op}`, amount: parseInt(amt), flow: type === 'DÉPÔT' ? 'IN' : 'OUT' });
+                                setShowConfirm(true);
+                            } else onShowToast('Remplissez tout', 'error');
+                        }} className="w-full py-5 gradient-blue text-white rounded-2xl font-black">VALIDER</button>
+                    </div>
+                );
+            };
+            
+            return (
+                <div className="p-4 pb-24 animate-slide-up">
+                    <div className="bg-white rounded-3xl p-6 shadow-lg">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-12 h-12 gradient-blue rounded-xl flex items-center justify-center">
+                                <i data-lucide="smartphone" className="w-6 h-6 text-white"></i>
+                            </div>
+                            <h2 className="text-2xl font-black text-gray-800">Services</h2>
+                        </div>
+                        <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-2xl">
+                            <button onClick={() => setTab('finance')} className={`flex-1 py-3 rounded-xl font-bold ${tab === 'finance' ? 'bg-white shadow' : ''}`}>Finance</button>
+                        </div>
+                        {tab === 'finance' && <FinanceTab />}
+                    </div>
+                    {showConfirm && service && <ConfirmModal title="Confirmer" message={service.description} amount={service.amount}
+                        onConfirm={confirmService} onCancel={() => setShowConfirm(false)} isWarning={service.flow === 'OUT'}/>}
+                </div>
+            );
+        };
+        
+        const SimpleStockModule = ({ user, onShowToast }) => {
+            const [products, setProducts] = useState([]);
+            useEffect(() => {
+                setProducts(StorageManager.load(STORAGE_KEYS.PRODUCTS, []));
+                lucide.createIcons();
+            }, []);
+            return (
+                <div className="p-4 pb-24 animate-slide-up">
+                    <div className="bg-white rounded-3xl p-6 shadow-lg mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center">
+                                <i data-lucide="package" className="w-6 h-6 text-white"></i>
+                            </div>
+                            <h2 className="text-2xl font-black text-gray-800">Stock</h2>
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        {products.map(p => (
+                            <div key={p.id} className="bg-white rounded-2xl p-4 shadow-md">
+                                <div className="flex gap-3">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${p.stock <= 4 ? 'bg-red-100' : 'bg-green-100'}`}>
+                                        <i data-lucide="box" className={`w-6 h-6 ${p.stock <= 4 ? 'text-red-600' : 'text-green-600'}`}></i>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-black text-gray-800">{p.name}</h3>
+                                        <p className="text-sm font-bold text-gray-700">{formatCurrency(p.price)}</p>
+                                        <span className={`text-sm font-black ${p.stock <= 4 ? 'text-red-600' : 'text-green-600'}`}>Stock: {p.stock}</span>
+                                        {p.stock <= 4 && <span className="block mt-1 text-xs font-bold text-red-600">⚠️ Critique</span>}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+        
+        const SimpleReportsModule = () => {
+            const [transactions, setTransactions] = useState([]);
+            const [days, setDays] = useState([]);
+            useEffect(() => {
+                setTransactions(StorageManager.load(STORAGE_KEYS.TRANSACTIONS, []));
+                setDays(getLast8Days());
+                lucide.createIcons();
+            }, []);
+            
+            const getStats = (date) => {
+                const start = new Date(date).setHours(0,0,0,0);
+                const end = new Date(date).setHours(23,59,59,999);
+                const dayTx = transactions.filter(t => t.timestamp >= start && t.timestamp <= end);
+                const revenue = dayTx.filter(t => t.type === 'SALE' || t.type === 'SERVICE_OFFICE').reduce((s,t) => s + t.amount, 0);
+                const moneyIn = dayTx.filter(t => (t.type === 'MONEY_TRANSFER' && t.flow === 'IN') || t.type === 'BILL_PAYMENT').reduce((s,t) => s + t.amount, 0);
+                const moneyOut = dayTx.filter(t => t.type === 'MONEY_TRANSFER' && t.flow === 'OUT').reduce((s,t) => s + t.amount, 0);
+                return { revenue, moneyIn, moneyOut, hasActivity: dayTx.length > 0 };
+            };
+            
+            return (
+                <div className="p-4 pb-24 animate-slide-up">
+                    <div className="bg-white rounded-3xl p-6 shadow-lg mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 gradient-green rounded-xl flex items-center justify-center">
+                                <i data-lucide="file-text" className="w-6 h-6 text-white"></i>
+                            </div>
+                            <h2 className="text-2xl font-black text-gray-800">Rapports</h2>
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        {days.map(day => {
+                            const stats = getStats(day);
+                            return (
+                                <div key={day} className={`bg-white rounded-2xl p-4 shadow-md ${!stats.hasActivity ? 'opacity-50' : ''}`}>
+                                    <h3 className="font-black text-gray-800 mb-4">{formatDate(day)}</h3>
+                                    {stats.hasActivity ? (
+                                        <div className="space-y-3">
+                                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4">
+                                                <p className="text-sm font-bold text-green-700 mb-1">REVENU</p>
+                                                <p className="text-2xl font-black text-green-600">{formatCurrency(stats.revenue)}</p>
+                                            </div>
+                                            {(stats.moneyIn > 0 || stats.moneyOut > 0) && (
+                                                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4">
+                                                    <p className="text-sm font-bold text-blue-700 mb-2">FLUX MOBILE MONEY</p>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <div><p className="text-xs text-blue-600 font-semibold">IN</p>
+                                                        <p className="text-lg font-black text-blue-600">{formatCurrency(stats.moneyIn)}</p></div>
+                                                        <div><p className="text-xs text-red-600 font-semibold">OUT</p>
+                                                        <p className="text-lg font-black text-red-600">{formatCurrency(stats.moneyOut)}</p></div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : <p className="text-center text-3xl font-black text-gray-300">-</p>}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+        
+        const App = () => {
+            const [user, setUser] = useState(null);
+            const [view, setView] = useState('dashboard');
+            const [toast, setToast] = useState(null);
+            useEffect(() => { initializeData(); }, []);
+            useEffect(() => { lucide.createIcons(); });
+            
+            if (!user) return <LoginScreen onLogin={setUser} />;
+            
+            return (
+                <div className="min-h-screen bg-gray-50 pb-20">
+                    <Header user={user} currentView={view} onBack={() => setView('dashboard')} />
+                    {toast && <div className="fixed top-20 left-4 right-4 z-50">
+                        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+                    </div>}
+                    <div className="min-h-screen">
+                        {view === 'dashboard' && <Dashboard user={user} onNavigate={setView} onLogout={() => {
+                            if (confirm('Déconnexion ?')) { setUser(null); setView('dashboard'); }
+                        }} />}
+                        {view === 'sales' && <SimpleSalesModule user={user} onShowToast={(m,t) => setToast({message:m,type:t})} />}
+                        {view === 'services' && <SimpleServicesModule user={user} onShowToast={(m,t) => setToast({message:m,type:t})} />}
+                        {view === 'stock' && <SimpleStockModule user={user} onShowToast={(m,t) => setToast({message:m,type:t})} />}
+                        {view === 'reports' && <SimpleReportsModule />}
+                    </div>
+                    <BottomNav currentView={view} onNavigate={setView} />
+                </div>
+            );
+        };
+        
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
