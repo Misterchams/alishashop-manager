@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ALISHASHOP Ultra</title>
+    <title>ALISHASHOP Manager V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -12,153 +12,270 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap');
-        body { font-family: 'Roboto', sans-serif; background: #f0f2f5; -webkit-tap-highlight-color: transparent; }
-        .glass { background: white; border-radius: 16px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .btn-press:active { transform: scale(0.95); }
-        .scroll-hide::-webkit-scrollbar { display: none; }
-        /* Couleurs Thématiques */
-        .theme-orange { background: linear-gradient(135deg, #FF6B35 0%, #D9381E 100%); color: white; }
-        .theme-blue { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; }
-        .theme-purple { background: linear-gradient(135deg, #6f42c1 0%, #4e2c92 100%); color: white; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #F3F4F6; -webkit-tap-highlight-color: transparent; }
+        
+        /* Design Amélioré inspiré du code source mais modernisé */
+        .gradient-orange { background: linear-gradient(135deg, #FF6B35 0%, #FF1493 100%); } /* Ton orange d'origine */
+        .gradient-blue { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); } /* Finance */
+        .gradient-green { background: linear-gradient(135deg, #10B981 0%, #059669 100%); } /* Validation */
+        .gradient-purple { background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); } /* Admin/Stock */
+        
+        .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+        .btn-press:active { transform: scale(0.96); transition: 0.1s; }
+        .input-box { width: 100%; background: #F9FAFB; border: 2px solid #E5E7EB; border-radius: 12px; padding: 12px; font-weight: bold; font-size: 1.1rem; outline: none; transition: 0.2s; }
+        .input-box:focus { border-color: #FF6B35; background: white; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect } = React;
 
-        // --- OUTILS DE BASE ---
-        const generateId = () => Math.random().toString(36).substr(2, 9);
+        // --- OUTILS ---
+        const generateId = () => Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
         const formatMoney = (n) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
-        const todayStr = () => new Date().toLocaleDateString('fr-FR');
+        const formatDate = () => new Date().toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
 
-        // --- DONNÉES INITIALES ---
-        const DEFAULT_SERVICES = [
-            { id: 'S1', name: 'Photocopie N&B', price: 50, type: 'fixed' },
-            { id: 'S2', name: 'Photocopie Couleur', price: 100, type: 'fixed' },
-            { id: 'S3', name: 'Reliure GM', price: 1000, type: 'fixed' },
-            { id: 'S4', name: 'Scanner', price: 200, type: 'fixed' },
-            { id: 'S5', name: 'Impression', price: 100, type: 'fixed' },
-            { id: 'S99', name: 'Service Sur Mesure', price: 0, type: 'libre' } // Prix libre
+        // --- DONNÉES DE BASE (Inspirées de la source) ---
+        const INITIAL_SERVICES = [
+            { id: 'S1', name: 'Photocopie N&B', price: 50, category: 'repro' },
+            { id: 'S2', name: 'Photocopie Couleur', price: 100, category: 'repro' },
+            { id: 'S3', name: 'Impression', price: 100, category: 'repro' },
+            { id: 'S4', name: 'Plastification', price: 500, category: 'repro' },
+            { id: 'S5', name: 'Reliure', price: 1000, category: 'repro' },
+            { id: 'S6', name: 'Scanner', price: 200, category: 'repro' },
+            { id: 'S7', name: 'Photo Identité', price: 2000, category: 'photo' },
+            { id: 'S99', name: 'Autre Service', price: 0, category: 'autre' }
         ];
 
-        // --- COMPOSANT : SCANNER ---
-        const Scanner = ({ onScan, onClose }) => {
-            useEffect(() => {
-                const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-                scanner.render((txt) => { onScan(txt); scanner.clear(); onClose(); }, console.warn);
-                return () => scanner.clear().catch(e=>{});
-            }, []);
-            return (
-                <div className="fixed inset-0 bg-black z-50 flex flex-col justify-center p-4">
-                    <div id="reader" className="bg-white rounded-lg"></div>
-                    <button onClick={onClose} className="mt-4 bg-red-600 text-white p-4 rounded-lg font-bold">FERMER</button>
-                </div>
-            );
-        };
+        const OPERATORS = ['Wave', 'Orange Money', 'Free Money', 'Wizall'];
 
-        // --- COMPOSANT : LOGIN ---
-        const LoginScreen = ({ onLogin }) => {
+        // --- COMPOSANT LOGIN (Gardé simple) ---
+        const Login = ({ onLogin }) => {
             const [pin, setPin] = useState("");
-            const users = [{ name: 'Patron', pin: '1234', role: 'admin' }, { name: 'Vendeur', pin: '0000', role: 'staff' }];
+            const users = [
+                { id: 'U1', name: 'Patron', role: 'admin', pin: '1234' },
+                { id: 'U2', name: 'Vendeur', role: 'staff', pin: '0000' }
+            ];
 
-            const handlePin = (n) => {
-                const newPin = pin + n;
-                setPin(newPin);
-                if (newPin.length === 4) {
-                    const u = users.find(u => u.pin === newPin);
+            useEffect(() => {
+                if (pin.length === 4) {
+                    const u = users.find(user => user.pin === pin);
                     if (u) onLogin(u);
-                    else { alert("Code Faux"); setPin(""); }
+                    else { alert("Code Erroné"); setPin(""); }
                 }
-            };
+            }, [pin]);
 
             return (
-                <div className="h-screen theme-orange flex flex-col items-center justify-center p-6">
-                    <h1 className="text-4xl font-black mb-2">ALISHASHOP</h1>
-                    <p className="mb-8 opacity-80">Acces Sécurisé</p>
-                    <div className="flex gap-2 mb-6 h-8">
-                        {[0,1,2,3].map(i => <div key={i} className={`w-4 h-4 rounded-full ${pin.length > i ? 'bg-white':'bg-white/30'}`}></div>)}
+                <div className="min-h-screen gradient-orange flex flex-col items-center justify-center p-6 text-white">
+                    <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mb-4 backdrop-blur-sm">
+                        <i data-lucide="store" className="w-10 h-10 text-white"></i>
                     </div>
+                    <h1 className="text-3xl font-black mb-1">ALISHASHOP</h1>
+                    <p className="opacity-80 mb-8 font-medium">Gestion Multiservices</p>
+                    
+                    <div className="flex gap-3 mb-8">
+                        {[0,1,2,3].map(i => (
+                            <div key={i} className={`w-4 h-4 rounded-full transition-all ${pin.length > i ? 'bg-white scale-125' : 'bg-white/30'}`}></div>
+                        ))}
+                    </div>
+
                     <div className="grid grid-cols-3 gap-4 w-full max-w-xs">
-                        {[1,2,3,4,5,6,7,8,9,0].map(n => (
-                            <button key={n} onClick={() => handlePin(n)} className="h-20 glass text-2xl font-bold text-orange-600 btn-press">
+                        {[1,2,3,4,5,6,7,8,9].map(n => (
+                            <button key={n} onClick={() => setPin(p => p + n)} className="h-20 bg-white/10 rounded-2xl text-2xl font-bold backdrop-blur-sm active:bg-white/30 transition">
                                 {n}
                             </button>
                         ))}
-                        <button onClick={() => setPin("")} className="col-span-2 h-20 bg-red-500 text-white rounded-xl font-bold btn-press">EFFACER</button>
+                        <div className="col-start-2">
+                            <button onClick={() => setPin(p => p + '0')} className="w-full h-20 bg-white/10 rounded-2xl text-2xl font-bold backdrop-blur-sm active:bg-white/30">0</button>
+                        </div>
+                        <button onClick={() => setPin(p => p.slice(0, -1))} className="h-20 bg-red-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm active:bg-red-500/40">
+                            <i data-lucide="delete" className="w-8 h-8"></i>
+                        </button>
                     </div>
                 </div>
             );
         };
 
-        // --- MODULE : BOUTIQUE (VENTE) ---
-        const ShopModule = ({ products, onSale }) => {
+        // --- MODULE VENTE BOUTIQUE ---
+        const ShopModule = ({ products, onAddTransaction, onUpdateStock }) => {
             const [cart, setCart] = useState([]);
-            const [search, setSearch] = useState("");
-            const [scanning, setScanning] = useState(false);
-
-            // Menu déroulant intelligent (Filtre les produits)
-            const filtered = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) && p.stock > 0);
+            const [searchTerm, setSearchTerm] = useState("");
+            const [showScanner, setShowScanner] = useState(false);
 
             const addToCart = (p) => {
-                const exists = cart.find(c => c.id === p.id);
-                if(exists) {
-                    if(exists.qty < p.stock) setCart(cart.map(c => c.id === p.id ? {...c, qty: c.qty+1} : c));
-                    else alert("Stock Insuffisant !");
-                } else setCart([...cart, {...p, qty: 1}]);
+                if (p.stock <= 0) return alert("Stock épuisé !");
+                const existing = cart.find(c => c.id === p.id);
+                if (existing) {
+                    if (existing.qty < p.stock) setCart(cart.map(c => c.id === p.id ? { ...c, qty: c.qty + 1 } : c));
+                } else {
+                    setCart([...cart, { ...p, qty: 1 }]);
+                }
             };
 
-            const validateSale = () => {
-                if(cart.length === 0) return;
-                const total = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
-                if(confirm(`Encaisser ${formatMoney(total)} ?`)) {
-                    onSale(cart, total);
+            const confirmSale = () => {
+                const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+                if (confirm(`Valider la vente de ${formatMoney(total)} ?`)) {
+                    // 1. Mettre à jour le stock
+                    cart.forEach(item => onUpdateStock(item.id, -item.qty)); // -qty pour déduire
+                    // 2. Enregistrer la transaction
+                    onAddTransaction({
+                        type: 'SALE',
+                        category: 'BOUTIQUE',
+                        amount: total,
+                        desc: `Vente ${cart.length} articles`,
+                        details: cart.map(c => `${c.name} (x${c.qty})`).join(', ')
+                    });
                     setCart([]);
-                    setSearch("");
+                }
+            };
+
+            // Filtrer les produits
+            const visibleProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+            return (
+                <div className="flex flex-col h-full">
+                    {/* Barre de recherche */}
+                    <div className="bg-white p-4 sticky top-0 z-10 shadow-sm flex gap-2">
+                        <div className="relative flex-1">
+                            <i data-lucide="search" className="absolute left-3 top-3.5 text-gray-400 w-5 h-5"></i>
+                            <input 
+                                type="text" 
+                                placeholder="Chercher produit..." 
+                                className="input-box pl-10"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        {/* Scanner (Simulation bouton) */}
+                        <button className="bg-gray-800 text-white p-3 rounded-xl" onClick={()=>alert("Fonction Scanner active (camera)")}>
+                            <i data-lucide="scan-barcode"></i>
+                        </button>
+                    </div>
+
+                    {/* Grille Produits */}
+                    <div className="p-4 grid grid-cols-2 gap-3 pb-24 overflow-y-auto">
+                        {visibleProducts.map(p => (
+                            <button key={p.id} onClick={() => addToCart(p)} className="bg-white p-3 rounded-2xl shadow-sm text-left btn-press border border-gray-100 relative overflow-hidden">
+                                {p.stock <= 0 && <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-red-500 rotate-12 border-2 border-red-500 rounded-xl m-2">ÉPUISÉ</div>}
+                                <div className="h-10 w-10 bg-orange-100 rounded-full flex items-center justify-center mb-2 text-orange-600">
+                                    <i data-lucide="shopping-bag" className="w-5 h-5"></i>
+                                </div>
+                                <h3 className="font-bold text-gray-800 text-sm leading-tight mb-1 truncate">{p.name}</h3>
+                                <div className="flex justify-between items-end">
+                                    <span className="font-black text-orange-600">{formatMoney(p.price)}</span>
+                                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${p.stock < 5 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>{p.stock}</span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Panier Flottant */}
+                    {cart.length > 0 && (
+                        <div className="fixed bottom-20 left-4 right-4 bg-gray-900 text-white p-4 rounded-2xl shadow-2xl z-20 flex justify-between items-center" onClick={confirmSale}>
+                            <div className="flex items-center gap-3">
+                                <div className="bg-orange-500 w-10 h-10 rounded-full flex items-center justify-center font-bold">
+                                    {cart.reduce((a, c) => a + c.qty, 0)}
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-400">Total à payer</p>
+                                    <p className="font-bold text-xl">{formatMoney(cart.reduce((a, c) => a + (c.price * c.qty), 0))}</p>
+                                </div>
+                            </div>
+                            <span className="font-bold text-orange-400 flex items-center gap-1">ENCAISSER <i data-lucide="arrow-right" className="w-5 h-5"></i></span>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- MODULE SERVICES (REPROGRAPHIE) AVEC QUANTITÉ ---
+        const ServicesModule = ({ onAddTransaction, isAdmin }) => {
+            const [selectedService, setSelectedService] = useState(null);
+            const [qty, setQty] = useState(1);
+            const [customPrice, setCustomPrice] = useState("");
+
+            const handleSelect = (s) => {
+                setSelectedService(s);
+                setQty(1);
+                setCustomPrice(s.price);
+            };
+
+            const validateService = () => {
+                if (!selectedService) return;
+                const finalPrice = selectedService.price === 0 ? parseInt(customPrice) : selectedService.price;
+                const total = finalPrice * qty;
+
+                if (confirm(`Confirmer : ${selectedService.name} (x${qty}) pour ${formatMoney(total)} ?`)) {
+                    onAddTransaction({
+                        type: 'SALE', // Considéré comme une vente
+                        category: 'SERVICE',
+                        amount: total,
+                        desc: `${selectedService.name}`,
+                        details: `Quantité: ${qty}`
+                    });
+                    setSelectedService(null);
                 }
             };
 
             return (
-                <div className="h-full flex flex-col">
-                    {scanning && <Scanner onScan={(code) => {
-                        const p = products.find(prod => prod.barcode === code);
-                        if(p) { addToCart(p); alert(`${p.name} ajouté !`); }
-                        else alert("Produit inconnu");
-                        setScanning(false);
-                    }} onClose={()=>setScanning(false)} />}
-
-                    {/* Barre de Recherche et Scan */}
-                    <div className="p-4 bg-white shadow-sm flex gap-2">
-                        <input value={search} onChange={e=>setSearch(e.target.value)} 
-                            placeholder="Chercher un produit..." className="flex-1 bg-gray-100 p-3 rounded-xl font-bold outline-none border border-gray-300 focus:border-orange-500" />
-                        <button onClick={()=>setScanning(true)} className="bg-gray-800 text-white p-3 rounded-xl"><i data-lucide="scan-barcode"></i></button>
-                    </div>
-
-                    {/* Liste Déroulante Visuelle */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                        {filtered.length === 0 ? <div className="text-center text-gray-400 mt-10">Aucun produit trouvé</div> : 
-                        filtered.map(p => (
-                            <div key={p.id} onClick={()=>addToCart(p)} className="bg-white p-4 rounded-xl border border-gray-200 flex justify-between items-center active:bg-orange-50 transition">
-                                <div>
-                                    <div className="font-bold text-gray-800">{p.name}</div>
-                                    <div className="text-xs text-gray-500">Stock: {p.stock}</div>
-                                </div>
-                                <div className="font-black text-orange-600">{formatMoney(p.price)}</div>
-                            </div>
+                <div className="p-4 h-full flex flex-col">
+                    <h2 className="text-2xl font-black text-gray-800 mb-4 px-2">Reprographie & Services</h2>
+                    
+                    {/* Liste des Services */}
+                    <div className="grid grid-cols-2 gap-3 mb-6 overflow-y-auto flex-1">
+                        {INITIAL_SERVICES.map(s => (
+                            <button key={s.id} onClick={() => handleSelect(s)} 
+                                className={`p-4 rounded-2xl border text-left btn-press transition shadow-sm
+                                ${selectedService?.id === s.id ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 bg-white'}`}>
+                                <i data-lucide={s.category === 'photo' ? 'camera' : s.category === 'autre' ? 'edit-3' : 'printer'} 
+                                   className={`w-8 h-8 mb-2 ${selectedService?.id === s.id ? 'text-blue-600' : 'text-gray-400'}`}></i>
+                                <div className="font-bold text-gray-800 leading-tight">{s.name}</div>
+                                <div className="text-sm font-semibold text-blue-600 mt-1">{s.price === 0 ? 'Sur devis' : formatMoney(s.price)}</div>
+                            </button>
                         ))}
                     </div>
 
-                    {/* Panier */}
-                    {cart.length > 0 && (
-                        <div className="bg-white border-t p-4 shadow-up z-10">
-                            <div className="flex justify-between items-end mb-3">
-                                <span className="text-gray-500 font-bold">{cart.length} articles</span>
-                                <span className="text-2xl font-black text-gray-900">{formatMoney(cart.reduce((a,i)=>a+(i.price*i.qty),0))}</span>
+                    {/* Panneau de configuration Quantité/Prix (Apparaît si sélection) */}
+                    {selectedService && (
+                        <div className="bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 fixed bottom-[80px] left-0 right-0 animate-slide-up z-20">
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 className="font-black text-lg">{selectedService.name}</h3>
+                                    <p className="text-gray-500 text-sm">Ajustez la quantité</p>
+                                </div>
+                                <button onClick={() => setSelectedService(null)} className="bg-gray-100 p-2 rounded-full"><i data-lucide="x"></i></button>
                             </div>
-                            <button onClick={validateSale} className="w-full theme-orange py-4 rounded-xl font-black text-lg btn-press">
-                                VALIDER LA VENTE
+
+                            <div className="flex gap-4 mb-4">
+                                {/* Selecteur Quantité */}
+                                <div className="flex items-center bg-gray-100 rounded-2xl p-2 w-1/2 justify-between">
+                                    <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 bg-white rounded-xl shadow font-bold text-xl">-</button>
+                                    <span className="text-2xl font-black">{qty}</span>
+                                    <button onClick={() => setQty(qty + 1)} className="w-10 h-10 bg-white rounded-xl shadow font-bold text-xl">+</button>
+                                </div>
+
+                                {/* Prix (si service libre) */}
+                                {selectedService.price === 0 ? (
+                                    <input 
+                                        type="number" 
+                                        placeholder="Prix Unitaire" 
+                                        className="w-1/2 bg-gray-100 rounded-2xl p-4 font-bold text-center outline-none border-2 border-blue-200 focus:border-blue-500"
+                                        value={customPrice}
+                                        onChange={(e) => setCustomPrice(e.target.value)}
+                                    />
+                                ) : (
+                                    <div className="w-1/2 flex flex-col justify-center items-end pr-2">
+                                        <span className="text-xs text-gray-500 font-bold">TOTAL</span>
+                                        <span className="text-2xl font-black text-blue-600">{formatMoney(selectedService.price * qty)}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button onClick={validateService} className="w-full py-4 gradient-blue text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-200 btn-press">
+                                VALIDER SERVICE
                             </button>
                         </div>
                     )}
@@ -166,148 +283,142 @@
             );
         };
 
-        // --- MODULE : SERVICES (Reprographie) ---
-        const ServicesModule = ({ services, onServiceSale, isAdmin, onUpdatePrice }) => {
-            const [customPrice, setCustomPrice] = useState("");
-            const [selectedService, setSelectedService] = useState(null);
+        // --- MODULE FINANCE (MOBILE MONEY) ---
+        const FinanceModule = ({ onAddTransaction }) => {
+            const [operator, setOperator] = useState(null);
+            const [type, setType] = useState('DEPOSIT'); // DEPOSIT (Dépôt) ou WITHDRAW (Retrait)
+            const [amount, setAmount] = useState("");
 
-            const handleServiceClick = (s) => {
-                if(s.type === 'libre') {
-                    const price = prompt("Entrez le montant du service :");
-                    if(price && !isNaN(price)) {
-                        onServiceSale({ ...s, price: parseInt(price) });
-                    }
-                } else {
-                    onServiceSale(s);
+            const handleSubmit = () => {
+                if (!operator || !amount) return alert("Remplissez tout !");
+                const val = parseInt(amount);
+                
+                if (confirm(`${type === 'DEPOSIT' ? 'DÉPÔT' : 'RETRAIT'} ${operator} de ${formatMoney(val)} ?`)) {
+                    onAddTransaction({
+                        type: 'FINANCE',
+                        category: type, // 'DEPOSIT' (Entrée Client = Sortie Caisse) ou 'WITHDRAW' (Sortie Client = Entrée Caisse)
+                        // ATTENTION LOGIQUE CAISSE :
+                        // Un Dépôt client = Le client donne du cash (Caisse augmente) -> On envoie du virtuel.
+                        // Un Retrait client = Le client envoie du virtuel -> On donne du cash (Caisse diminue).
+                        // On va simplifier : On note le flux.
+                        operator: operator,
+                        amount: val,
+                        desc: `${operator} - ${type === 'DEPOSIT' ? 'Dépôt' : 'Retrait'}`
+                    });
+                    setAmount("");
+                    setOperator(null);
                 }
             };
 
-            const adminEdit = (s) => {
-                const newPrice = prompt(`Nouveau prix pour ${s.name} ?`, s.price);
-                if(newPrice && !isNaN(newPrice)) onUpdatePrice(s.id, parseInt(newPrice));
-            };
-
             return (
-                <div className="p-4 grid grid-cols-2 gap-4">
-                    {services.map(s => (
-                        <div key={s.id} className="relative">
-                            <button onClick={()=>handleServiceClick(s)} 
-                                className={`w-full p-6 rounded-2xl flex flex-col items-center justify-center gap-2 shadow-sm btn-press ${s.type==='libre'?'bg-purple-100 text-purple-700':'bg-white text-gray-700'}`}>
-                                <i data-lucide={s.type==='libre'?'edit-3':'printer'} className="w-8 h-8 mb-2"></i>
-                                <span className="font-bold text-center leading-tight">{s.name}</span>
-                                <span className="font-black bg-black/5 px-2 py-1 rounded-lg text-sm">
-                                    {s.type === 'libre' ? 'PRIX LIBRE' : formatMoney(s.price)}
-                                </span>
+                <div className="p-4">
+                    <h2 className="text-2xl font-black text-gray-800 mb-6">Mobile Money</h2>
+                    
+                    {/* Choix Opérateur */}
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                        {OPERATORS.map(op => (
+                            <button key={op} onClick={() => setOperator(op)}
+                                className={`p-4 rounded-2xl font-bold border-2 transition btn-press
+                                ${operator === op ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-transparent bg-white text-gray-600 shadow-sm'}`}>
+                                {op}
                             </button>
-                            {isAdmin && s.type !== 'libre' && (
-                                <button onClick={()=>adminEdit(s)} className="absolute top-2 right-2 bg-gray-200 p-2 rounded-full text-xs">
-                                    <i data-lucide="settings" className="w-4 h-4"></i>
+                        ))}
+                    </div>
+
+                    {operator && (
+                        <div className="animate-slide-up bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
+                            <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
+                                <button onClick={() => setType('DEPOSIT')} className={`flex-1 py-3 rounded-lg font-bold text-sm transition ${type === 'DEPOSIT' ? 'bg-green-500 text-white shadow' : 'text-gray-500'}`}>
+                                    DÉPÔT (Client verse)
                                 </button>
-                            )}
+                                <button onClick={() => setType('WITHDRAW')} className={`flex-1 py-3 rounded-lg font-bold text-sm transition ${type === 'WITHDRAW' ? 'bg-red-500 text-white shadow' : 'text-gray-500'}`}>
+                                    RETRAIT (Client reçoit)
+                                </button>
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="text-xs font-bold text-gray-500 ml-2">MONTANT</label>
+                                <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
+                                    className="w-full text-3xl font-black p-4 bg-gray-50 rounded-2xl outline-none border-2 border-transparent focus:border-blue-500 focus:bg-white transition"
+                                    placeholder="0" />
+                            </div>
+
+                            <button onClick={handleSubmit} className={`w-full py-4 rounded-2xl font-bold text-white text-lg shadow-lg btn-press ${type === 'DEPOSIT' ? 'gradient-green' : 'gradient-orange'}`}>
+                                VALIDER OPÉRATION
+                            </button>
                         </div>
-                    ))}
+                    )}
                 </div>
             );
         };
 
-        // --- MODULE : ARRIVAGE STOCK (L'intégration Facture) ---
-        const StockModule = ({ products, onRestock, onNewProduct }) => {
-            // Mode "Nouvel Arrivage"
+        // --- MODULE STOCK (INCRÉMENTATION FACTURE) ---
+        const StockModule = ({ products, onUpdateStock, onAddProduct }) => {
             const [mode, setMode] = useState('list'); // 'list' ou 'entry'
-            const [entryItem, setEntryItem] = useState({ id: null, qty: '', buyPrice: '', sellPrice: '' });
-            const [search, setSearch] = useState("");
-            const [scanning, setScanning] = useState(false);
+            const [selectedId, setSelectedId] = useState("");
+            const [qtyToAdd, setQtyToAdd] = useState("");
+            const [newPrice, setNewPrice] = useState("");
 
-            // Trouver produit
-            const foundProduct = products.find(p => p.id === entryItem.id);
-
-            const handleScan = (code) => {
-                const p = products.find(prod => prod.barcode === code);
-                if(p) {
-                    setEntryItem({ ...entryItem, id: p.id, sellPrice: p.price });
-                } else {
-                    if(confirm("Produit inconnu. Créer ce nouveau produit ?")) {
-                        const name = prompt("Nom du produit :");
-                        if(name) {
-                            const newP = { id: generateId(), barcode: code, name, stock: 0, price: 0 };
-                            onNewProduct(newP);
-                            setEntryItem({ ...entryItem, id: newP.id, sellPrice: 0 });
-                        }
-                    }
-                }
-                setScanning(false);
+            const handleRestock = () => {
+                if(!selectedId || !qtyToAdd) return;
+                onUpdateStock(selectedId, parseInt(qtyToAdd), newPrice ? parseInt(newPrice) : null);
+                alert("Stock mis à jour avec succès !");
+                setQtyToAdd("");
+                setNewPrice("");
             };
 
-            const addToStock = () => {
-                if(!entryItem.id || !entryItem.qty) return alert("Remplir quantité !");
-                onRestock(entryItem.id, parseInt(entryItem.qty), parseInt(entryItem.sellPrice));
-                alert("Stock mis à jour !");
-                setEntryItem({ id: null, qty: '', buyPrice: '', sellPrice: '' }); // Reset
-                setSearch("");
+            const handleCreate = () => {
+                const name = prompt("Nom du nouveau produit ?");
+                if(name) {
+                    const price = prompt("Prix de vente ?");
+                    const stock = prompt("Stock initial (Facture) ?");
+                    const newProd = { id: generateId(), name, price: parseInt(price), stock: parseInt(stock) };
+                    onAddProduct(newProd);
+                    alert("Produit créé !");
+                }
             };
 
             return (
-                <div className="p-4 pb-20">
-                    {scanning && <Scanner onScan={handleScan} onClose={()=>setScanning(false)} />}
-
-                    <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-purple-100 mb-6">
-                        <h2 className="text-xl font-black text-purple-700 mb-4 flex items-center gap-2">
-                            <i data-lucide="package-plus"></i> SAISIE FACTURE / ARRIVAGE
-                        </h2>
-                        
-                        {/* Étape 1 : Choisir le produit */}
-                        <div className="mb-4">
-                            <label className="text-xs font-bold text-gray-500">1. IDENTIFIER PRODUIT</label>
-                            <div className="flex gap-2 mt-1">
-                                {foundProduct ? (
-                                    <div className="flex-1 bg-purple-50 p-3 rounded-xl font-bold flex justify-between items-center border border-purple-200">
-                                        <span>{foundProduct.name}</span>
-                                        <button onClick={()=>setEntryItem({...entryItem, id: null})}><i data-lucide="x" className="text-red-500"></i></button>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <select className="flex-1 bg-gray-100 p-3 rounded-xl font-bold" 
-                                            onChange={(e) => {
-                                                const p = products.find(x => x.id === e.target.value);
-                                                if(p) setEntryItem({...entryItem, id: p.id, sellPrice: p.price});
-                                            }}>
-                                            <option value="">-- Choisir dans la liste --</option>
-                                            {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                        </select>
-                                        <button onClick={()=>setScanning(true)} className="bg-black text-white p-3 rounded-xl"><i data-lucide="scan"></i></button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Étape 2 : Données Facture */}
-                        {foundProduct && (
-                            <div className="animate-fade-in space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-500">QUANTITÉ (Facture)</label>
-                                        <input type="number" value={entryItem.qty} onChange={e=>setEntryItem({...entryItem, qty: e.target.value})} 
-                                            className="w-full bg-gray-100 p-3 rounded-xl font-black text-xl" placeholder="0" />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-500">PRIX VENTE (Unité)</label>
-                                        <input type="number" value={entryItem.sellPrice} onChange={e=>setEntryItem({...entryItem, sellPrice: e.target.value})} 
-                                            className="w-full bg-gray-100 p-3 rounded-xl font-black text-xl text-orange-600" />
-                                    </div>
-                                </div>
-                                <button onClick={addToStock} className="w-full theme-purple py-4 rounded-xl font-bold text-white shadow-lg btn-press">
-                                    VALIDER LA LIGNE
-                                </button>
-                            </div>
-                        )}
+                <div className="p-4 pb-24">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-black text-gray-800">Gestion Stock</h2>
+                        <button onClick={handleCreate} className="bg-gray-900 text-white px-4 py-2 rounded-lg font-bold text-sm">+ Nouveau</button>
                     </div>
 
-                    <h3 className="font-bold text-gray-500 mb-2">État du Stock Actuel</h3>
+                    {/* Zone Saisie Facture */}
+                    <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-purple-100 mb-8">
+                        <h3 className="font-bold text-purple-700 mb-4 flex items-center gap-2"><i data-lucide="file-plus"></i> SAISIE FACTURE</h3>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-400">PRODUIT</label>
+                                <select className="input-box" value={selectedId} onChange={e => setSelectedId(e.target.value)}>
+                                    <option value="">-- Sélectionner produit --</option>
+                                    {products.map(p => <option key={p.id} value={p.id}>{p.name} (Actuel: {p.stock})</option>)}
+                                </select>
+                            </div>
+                            <div className="flex gap-3">
+                                <div className="flex-1">
+                                    <label className="text-xs font-bold text-gray-400">QUANTITÉ (+)</label>
+                                    <input type="number" className="input-box" placeholder="Ex: 10" value={qtyToAdd} onChange={e=>setQtyToAdd(e.target.value)} />
+                                </div>
+                                <div className="flex-1">
+                                    <label className="text-xs font-bold text-gray-400">PRIX VENTE</label>
+                                    <input type="number" className="input-box" placeholder="Optionnel" value={newPrice} onChange={e=>setNewPrice(e.target.value)} />
+                                </div>
+                            </div>
+                            <button onClick={handleRestock} className="w-full py-3 gradient-purple text-white rounded-xl font-bold shadow-lg btn-press">
+                                AJOUTER AU STOCK
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Liste Simple */}
                     <div className="space-y-2">
                         {products.map(p => (
-                            <div key={p.id} className="bg-white p-3 rounded-xl border border-gray-100 flex justify-between">
-                                <span className="font-medium">{p.name}</span>
-                                <span className={`font-bold ${p.stock<5?'text-red-500':'text-green-600'}`}>{p.stock} en stock</span>
+                            <div key={p.id} className="bg-white p-3 rounded-xl flex justify-between items-center border border-gray-100">
+                                <span className="font-bold text-gray-700">{p.name}</span>
+                                <span className="bg-gray-100 px-3 py-1 rounded-lg font-bold text-sm">Stock: {p.stock}</span>
                             </div>
                         ))}
                     </div>
@@ -315,145 +426,166 @@
             );
         };
 
-        // --- APPLICATION PRINCIPALE ---
+        // --- APP PRINCIPALE ---
         const App = () => {
             const [user, setUser] = useState(null);
-            const [view, setView] = useState('sales'); // sales, services, stock, reports
+            const [view, setView] = useState('shop'); // shop, services, finance, stock, reports
             
-            // Base de données locale
-            const [products, setProducts] = useState(() => JSON.parse(localStorage.getItem('alisha_products')) || []);
-            const [services, setServices] = useState(() => JSON.parse(localStorage.getItem('alisha_services')) || DEFAULT_SERVICES);
+            // DONNÉES (Stockage Local)
+            const [products, setProducts] = useState(() => JSON.parse(localStorage.getItem('alisha_products')) || [
+                {id: 'p1', name: 'Ecouteurs BT', price: 3500, stock: 10},
+                {id: 'p2', name: 'Cable USB-C', price: 1500, stock: 20}
+            ]);
             const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('alisha_transactions')) || []);
 
-            // Sauvegarde automatique
             useEffect(() => {
                 localStorage.setItem('alisha_products', JSON.stringify(products));
-                localStorage.setItem('alisha_services', JSON.stringify(services));
                 localStorage.setItem('alisha_transactions', JSON.stringify(transactions));
                 lucide.createIcons();
-            }, [products, services, transactions, view]);
+            }, [products, transactions, view, user]);
 
-            // --- ACTIONS ---
-            const handleSale = (cartItems, total) => {
-                // 1. Déduire Stock
-                const newProducts = products.map(p => {
-                    const item = cartItems.find(c => c.id === p.id);
-                    return item ? { ...p, stock: p.stock - item.qty } : p;
-                });
-                setProducts(newProducts);
+            const addTransaction = (tx) => {
+                setTransactions([{ id: generateId(), date: Date.now(), user: user.name, ...tx }, ...transactions]);
+            };
+
+            const updateStock = (id, qtyChange, newPrice) => {
+                setProducts(products.map(p => {
+                    if (p.id === id) {
+                        return { 
+                            ...p, 
+                            stock: p.stock + qtyChange, 
+                            price: newPrice || p.price 
+                        };
+                    }
+                    return p;
+                }));
+            };
+
+            const addNewProduct = (prod) => setProducts([...products, prod]);
+
+            // GÉNÉRATEUR RAPPORT WHATSAPP COMPLET
+            const sendReport = () => {
+                const today = new Date().toLocaleDateString();
+                const dailyTx = transactions.filter(t => new Date(t.date).toLocaleDateString() === today);
                 
-                // 2. Enregistrer Transaction
-                const tx = { id: generateId(), type: 'SALE', amount: total, desc: `Vente ${cartItems.length} art.`, date: Date.now(), by: user.name };
-                setTransactions([tx, ...transactions]);
-            };
-
-            const handleServiceSale = (service) => {
-                if(confirm(`Confirmer ${service.name} pour ${formatMoney(service.price)} ?`)) {
-                    const tx = { id: generateId(), type: 'SERVICE', amount: service.price, desc: service.name, date: Date.now(), by: user.name };
-                    setTransactions([tx, ...transactions]);
-                    alert("Service encaissé !");
-                }
-            };
-
-            const handleRestock = (prodId, qty, newPrice) => {
-                setProducts(products.map(p => p.id === prodId ? { ...p, stock: p.stock + qty, price: newPrice || p.price } : p));
-                // Optionnel : Enregistrer une transaction "ACHAT" si on gérait la caisse dépense
-            };
-
-            const handleNewProduct = (prod) => setProducts([...products, prod]);
-
-            const handleUpdateServicePrice = (id, price) => {
-                setServices(services.map(s => s.id === id ? {...s, price} : s));
-            };
-
-            // --- RAPPORT WHATSAPP ---
-            const generateReport = () => {
-                const todayTx = transactions.filter(t => new Date(t.date).toLocaleDateString() === new Date().toLocaleDateString());
-                const totalVente = todayTx.filter(t => t.type === 'SALE').reduce((a,t)=>a+t.amount,0);
-                const totalService = todayTx.filter(t => t.type === 'SERVICE').reduce((a,t)=>a+t.amount,0);
+                // Calculs
+                const sales = dailyTx.filter(t => t.type === 'SALE' && t.category === 'BOUTIQUE').reduce((a,t)=>a+t.amount,0);
+                const services = dailyTx.filter(t => t.type === 'SALE' && t.category === 'SERVICE').reduce((a,t)=>a+t.amount,0);
                 
-                const text = `
-*RAPPORT ALISHASHOP - ${todayStr()}*
+                // Finance
+                const depots = dailyTx.filter(t => t.type === 'FINANCE' && t.category === 'DEPOSIT');
+                const retraits = dailyTx.filter(t => t.type === 'FINANCE' && t.category === 'WITHDRAW');
+                const totalDepot = depots.reduce((a,t)=>a+t.amount,0);
+                const totalRetrait = retraits.reduce((a,t)=>a+t.amount,0);
+
+                const msg = `
+*📊 RAPPORT ALISHASHOP - ${today}*
 👤 Vendeur: ${user.name}
--------------------------
-🛍️ Ventes Boutique: ${formatMoney(totalVente)}
-🖨️ Services: ${formatMoney(totalService)}
--------------------------
-💰 *TOTAL JOURNALIER: ${formatMoney(totalVente + totalService)}*
+
+*🛒 VENTES & SERVICES*
+-----------------------
+🛍️ Boutique : ${formatMoney(sales)}
+🖨️ Services : ${formatMoney(services)}
+*✅ TOTAL REVENU : ${formatMoney(sales + services)}*
+
+*📱 MOBILE MONEY (Flux)*
+-----------------------
+📥 Dépôts (Entrée Client) : ${formatMoney(totalDepot)}
+📤 Retraits (Sortie Client) : ${formatMoney(totalRetrait)}
+🔄 Balance Ops : ${depots.length} dépôts / ${retraits.length} retraits
+
+*📝 Commentaire :*
+R.A.S
 `.trim();
-                
-                const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                window.open(url, '_blank');
+                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
             };
 
-            if(!user) return <LoginScreen onLogin={setUser} />;
+            if (!user) return <Login onLogin={setUser} />;
 
             return (
-                <div className="max-w-md mx-auto h-screen bg-gray-50 flex flex-col relative shadow-2xl">
-                    {/* EN-TÊTE */}
-                    <div className="bg-white p-4 flex justify-between items-center shadow-sm z-10">
-                        <div className="flex items-center gap-2">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${user.role==='admin'?'bg-orange-600':'bg-blue-600'}`}>
-                                {user.name[0]}
-                            </div>
-                            <div>
-                                <h2 className="font-bold text-sm">{user.name}</h2>
-                                <p className="text-xs text-gray-500">{user.role === 'admin' ? 'Gérant' : 'Vendeur'}</p>
-                            </div>
+                <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col shadow-2xl relative">
+                    {/* Header */}
+                    <div className="bg-white p-4 shadow-sm flex justify-between items-center z-10">
+                        <div>
+                            <h1 className="font-black text-xl tracking-tight gradient-orange text-transparent bg-clip-text">ALISHASHOP</h1>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{user.role === 'admin' ? 'Espace Gérant' : `Vendeur: ${user.name}`}</p>
                         </div>
-                        <button onClick={()=>setUser(null)} className="p-2 bg-gray-100 rounded-lg"><i data-lucide="log-out" className="w-4 h-4"></i></button>
+                        {user.role === 'admin' && (
+                            <div className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">Admin</div>
+                        )}
                     </div>
 
-                    {/* CONTENU VARIABLE */}
-                    <div className="flex-1 overflow-y-auto bg-gray-50 relative">
-                        {view === 'sales' && <ShopModule products={products} onSale={handleSale} />}
-                        {view === 'services' && <ServicesModule services={services} onServiceSale={handleServiceSale} isAdmin={user.role==='admin'} onUpdatePrice={handleUpdateServicePrice} />}
-                        {view === 'stock' && user.role === 'admin' && <StockModule products={products} onRestock={handleRestock} onNewProduct={handleNewProduct} />}
+                    {/* Contenu */}
+                    <div className="flex-1 overflow-hidden relative">
+                        {view === 'shop' && <ShopModule products={products} onAddTransaction={addTransaction} onUpdateStock={updateStock} />}
+                        {view === 'services' && <ServicesModule onAddTransaction={addTransaction} isAdmin={user.role==='admin'} />}
+                        {view === 'finance' && <FinanceModule onAddTransaction={addTransaction} />}
+                        {view === 'stock' && (user.role==='admin' ? <StockModule products={products} onUpdateStock={updateStock} onAddProduct={addNewProduct} /> : <div className="p-10 text-center text-gray-400">Accès Réservé</div>)}
                         
                         {view === 'reports' && (
-                            <div className="p-6">
-                                <h2 className="text-2xl font-black mb-6">Bilan du Jour</h2>
-                                <div className="bg-white p-6 rounded-3xl shadow-lg text-center mb-6">
-                                    <p className="text-gray-500 font-bold">Chiffre d'Affaires</p>
-                                    <p className="text-4xl font-black text-green-600 mt-2">
-                                        {formatMoney(transactions.filter(t => new Date(t.date).toLocaleDateString() === new Date().toLocaleDateString()).reduce((a,t)=>a+t.amount,0))}
-                                    </p>
+                            <div className="p-6 h-full overflow-y-auto pb-24">
+                                <h2 className="text-2xl font-black mb-6 text-gray-800">Bilan du Jour</h2>
+                                
+                                <div className="grid grid-cols-2 gap-4 mb-6">
+                                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-orange-100">
+                                        <p className="text-xs font-bold text-gray-400">VENTE TOTAL</p>
+                                        <p className="text-xl font-black text-orange-600">
+                                            {formatMoney(transactions.filter(t=>t.type==='SALE' && new Date(t.date).toLocaleDateString() === new Date().toLocaleDateString()).reduce((a,t)=>a+t.amount,0))}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-blue-100">
+                                        <p className="text-xs font-bold text-gray-400">OPERATIONS MM</p>
+                                        <p className="text-xl font-black text-blue-600">
+                                            {transactions.filter(t=>t.type==='FINANCE' && new Date(t.date).toLocaleDateString() === new Date().toLocaleDateString()).length}
+                                        </p>
+                                    </div>
                                 </div>
-                                <button onClick={generateReport} className="w-full py-4 bg-green-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg btn-press">
-                                    <i data-lucide="send"></i> ENVOYER SUR WHATSAPP
+
+                                <button onClick={sendReport} className="w-full py-4 gradient-green text-white font-bold rounded-2xl shadow-lg shadow-green-200 btn-press flex items-center justify-center gap-2 mb-8">
+                                    <i data-lucide="message-circle"></i> ENVOYER RAPPORT WHATSAPP
                                 </button>
-                                <div className="mt-8">
-                                    <h3 className="font-bold text-gray-600 mb-4">Historique Récent</h3>
-                                    {transactions.slice(0, 10).map(t => (
-                                        <div key={t.id} className="flex justify-between py-3 border-b border-gray-100 text-sm">
-                                            <span>{t.desc}</span>
-                                            <span className="font-bold">{formatMoney(t.amount)}</span>
+
+                                <h3 className="font-bold text-gray-500 mb-3 text-sm uppercase">Dernières opérations</h3>
+                                <div className="space-y-3">
+                                    {transactions.slice(0,10).map(t => (
+                                        <div key={t.id} className="bg-white p-3 rounded-xl flex items-center gap-3 shadow-sm">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white
+                                                ${t.category === 'BOUTIQUE' ? 'bg-orange-500' : t.category === 'SERVICE' ? 'bg-blue-500' : 'bg-gray-800'}`}>
+                                                <i data-lucide={t.category === 'BOUTIQUE' ? 'shopping-bag' : t.category === 'SERVICE' ? 'printer' : 'smartphone'}></i>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-sm text-gray-800">{t.desc}</p>
+                                                {t.details && <p className="text-xs text-gray-500">{t.details}</p>}
+                                            </div>
+                                            <p className="font-black text-sm">{formatMoney(t.amount)}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
-                        
-                        {view === 'stock' && user.role !== 'admin' && (
-                            <div className="h-full flex items-center justify-center text-gray-400 font-bold p-10 text-center">
-                                Accès réservé au Gérant
-                            </div>
-                        )}
                     </div>
 
-                    {/* BARRE DE NAVIGATION */}
-                    <div className="bg-white p-2 flex justify-around border-t pb-safe">
-                        <button onClick={()=>setView('sales')} className={`p-3 rounded-xl flex flex-col items-center gap-1 ${view==='sales'?'text-orange-600 bg-orange-50': 'text-gray-400'}`}>
-                            <i data-lucide="shopping-cart"></i> <span className="text-[10px] font-bold">Vente</span>
+                    {/* Navigation Bas */}
+                    <div className="bg-white p-2 border-t flex justify-around pb-safe">
+                        <button onClick={() => setView('shop')} className={`p-2 rounded-xl flex flex-col items-center gap-1 w-16 transition ${view==='shop' ? 'text-orange-600 bg-orange-50' : 'text-gray-400'}`}>
+                            <i data-lucide="shopping-cart"></i>
+                            <span className="text-[10px] font-bold">Vente</span>
                         </button>
-                        <button onClick={()=>setView('services')} className={`p-3 rounded-xl flex flex-col items-center gap-1 ${view==='services'?'text-blue-600 bg-blue-50': 'text-gray-400'}`}>
-                            <i data-lucide="printer"></i> <span className="text-[10px] font-bold">Services</span>
+                        <button onClick={() => setView('services')} className={`p-2 rounded-xl flex flex-col items-center gap-1 w-16 transition ${view==='services' ? 'text-blue-600 bg-blue-50' : 'text-gray-400'}`}>
+                            <i data-lucide="printer"></i>
+                            <span className="text-[10px] font-bold">Serv.</span>
                         </button>
-                        <button onClick={()=>setView('stock')} className={`p-3 rounded-xl flex flex-col items-center gap-1 ${view==='stock'?'text-purple-600 bg-purple-50': 'text-gray-400'}`}>
-                            <i data-lucide="package"></i> <span className="text-[10px] font-bold">Stock</span>
+                        <button onClick={() => setView('finance')} className={`p-2 rounded-xl flex flex-col items-center gap-1 w-16 transition ${view==='finance' ? 'text-gray-800 bg-gray-100' : 'text-gray-400'}`}>
+                            <i data-lucide="smartphone"></i>
+                            <span className="text-[10px] font-bold">Money</span>
                         </button>
-                        <button onClick={()=>setView('reports')} className={`p-3 rounded-xl flex flex-col items-center gap-1 ${view==='reports'?'text-green-600 bg-green-50': 'text-gray-400'}`}>
-                            <i data-lucide="bar-chart-2"></i> <span className="text-[10px] font-bold">Bilan</span>
+                        <button onClick={() => setView('stock')} className={`p-2 rounded-xl flex flex-col items-center gap-1 w-16 transition ${view==='stock' ? 'text-purple-600 bg-purple-50' : 'text-gray-400'}`}>
+                            <i data-lucide="package"></i>
+                            <span className="text-[10px] font-bold">Stock</span>
+                        </button>
+                        <button onClick={() => setView('reports')} className={`p-2 rounded-xl flex flex-col items-center gap-1 w-16 transition ${view==='reports' ? 'text-green-600 bg-green-50' : 'text-gray-400'}`}>
+                            <i data-lucide="file-text"></i>
+                            <span className="text-[10px] font-bold">Bilan</span>
                         </button>
                     </div>
                 </div>
