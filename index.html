@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ALISHASHOP Catalogue Intégré</title>
+    <title>ALISHASHOP Négoce</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -15,30 +15,21 @@
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap');
         body { font-family: 'Outfit', sans-serif; background: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
         
-        /* THEMES DES MENUS */
+        /* THEMES */
         .bg-home { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); } 
         .bg-shop { background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%); } 
         .bg-service { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); } 
         .bg-money { background: linear-gradient(135deg, #059669 0%, #047857 100%); } 
         .bg-stock { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); } 
 
-        /* COULEURS OPERATEURS SENEGAL */
-        .op-wave { background: #1DC4FF; color: white; }
-        .op-om { background: #FF7900; color: white; }
-        .op-free { background: #D60B51; color: white; }
-        .op-wizall { background: #0054A6; color: white; }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            color: #1e293b;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-radius: 20px; color: #1e293b; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .glass-dark { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(12px); color: white; border-radius: 20px; }
         
         .btn-press:active { transform: scale(0.96); transition: 0.1s; }
-        .slide-up { animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -51,13 +42,14 @@
         const generateId = () => Math.random().toString(36).substr(2, 6).toUpperCase();
 
         const OPERATORS = [
-            { name: 'Wave', class: 'op-wave' },
-            { name: 'Orange Money', class: 'op-om' },
-            { name: 'Free Money', class: 'op-free' },
-            { name: 'Wizall', class: 'op-wizall' }
+            { name: 'Wave', color: 'bg-sky-400' },
+            { name: 'Orange Money', color: 'bg-orange-500' },
+            { name: 'Free Money', color: 'bg-red-600' },
+            { name: 'Wizall', color: 'bg-blue-700' }
         ];
 
-        // --- CATALOGUE INTEGRÉ (Données extraites du PDF) ---
+        // --- CATALOGUE (Extrait du PDF) ---
+        [cite_start]// [cite: 1] Catalogue_Complet_Accessoires_Telephones_Informatique.pdf
         const INIT_PRODUCTS = [
             { id: 'P01', name: 'Coque silicone Antichoc', price: 4500, stock: 20 },
             { id: 'P02', name: 'Coque rigide Premium', price: 6000, stock: 15 },
@@ -123,6 +115,7 @@
             { id: 'S5', name: 'Photo Identité', price: 2000, icon: 'camera' }
         ];
 
+        // --- COMPOSANTS LOGIN & HEADER ---
         const Login = ({ onLogin }) => {
             const [role, setRole] = useState(null);
             const [pin, setPin] = useState("");
@@ -163,15 +156,94 @@
             );
         };
 
-        const Header = ({ title, onBack, onLogout, user }) => (
-            <div className="p-4 pt-6 sticky top-0 z-40 bg-black/20 backdrop-blur shadow-sm flex justify-between items-center mb-4">
+        const Header = ({ title, onBack, onLogout, user, cartCount, onOpenCart }) => (
+            <div className="p-4 pt-6 sticky top-0 z-30 bg-black/20 backdrop-blur shadow-sm flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
                     {onBack && <button onClick={onBack} className="p-2 bg-white/20 rounded-full btn-press"><i data-lucide="arrow-left" className="text-white"></i></button>}
                     <div><h2 className="font-black text-xl text-white uppercase">{title}</h2><p className="text-xs text-white/70 font-bold">{user.name}</p></div>
                 </div>
-                <button onClick={onLogout} className="p-2 bg-white/10 rounded-full btn-press"><i data-lucide="refresh-cw" className="text-white"></i></button>
+                <div className="flex gap-2">
+                    {cartCount !== undefined && (
+                        <button onClick={onOpenCart} className="relative p-2 bg-orange-500 text-white rounded-full btn-press shadow-lg border-2 border-white">
+                            <i data-lucide="shopping-cart"></i>
+                            {cartCount > 0 && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border border-white">{cartCount}</span>}
+                        </button>
+                    )}
+                    <button onClick={onLogout} className="p-2 bg-white/10 rounded-full btn-press"><i data-lucide="refresh-cw" className="text-white"></i></button>
+                </div>
             </div>
         );
+
+        // --- COMPOSANT PANIER (AVEC MODIF PRIX) ---
+        const CartModal = ({ cart, updateCartItem, removeFromCart, onCheckout, onClose }) => {
+            const total = cart.reduce((a,c)=>a+(c.price*c.qty),0);
+            
+            return (
+                <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col slide-up">
+                    <div className="p-4 flex justify-between items-center bg-gray-800 border-b border-gray-700">
+                        <h2 className="text-2xl font-black text-white flex items-center gap-2"><i data-lucide="shopping-cart"></i> MON PANIER</h2>
+                        <button onClick={onClose} className="p-2 bg-gray-700 rounded-full text-white"><i data-lucide="x"></i></button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                        {cart.length === 0 ? (
+                            <div className="text-center text-gray-500 mt-20">
+                                <i data-lucide="shopping-bag" className="w-16 h-16 mx-auto mb-4 opacity-50"></i>
+                                <p>Le panier est vide</p>
+                            </div>
+                        ) : (
+                            cart.map(item => (
+                                <div key={item.id} className="bg-white rounded-xl p-4 shadow-lg text-gray-800 animate-fade-in">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h3 className="font-bold text-lg leading-tight w-2/3">{item.name}</h3>
+                                        <button onClick={()=>removeFromCart(item.id)} className="text-red-500 bg-red-50 p-1 rounded"><i data-lucide="trash-2" className="w-5 h-5"></i></button>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-lg">
+                                        {/* Quantité */}
+                                        <div className="flex items-center gap-2 bg-white rounded-lg border p-1 shadow-sm">
+                                            <button onClick={()=>updateCartItem(item.id, 'qty', Math.max(1, item.qty-1))} className="w-8 h-8 bg-gray-200 rounded font-bold">-</button>
+                                            <span className="font-black w-6 text-center">{item.qty}</span>
+                                            <button onClick={()=>updateCartItem(item.id, 'qty', item.qty+1)} className="w-8 h-8 bg-gray-200 rounded font-bold">+</button>
+                                        </div>
+                                        
+                                        {/* PRIX EDITABLE */}
+                                        <div className="flex-1">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase">Prix Unitaire (Modifiable)</label>
+                                            <div className="flex items-center border-b-2 border-orange-200">
+                                                <input 
+                                                    type="number" 
+                                                    value={item.price} 
+                                                    onChange={(e)=>updateCartItem(item.id, 'price', parseInt(e.target.value) || 0)}
+                                                    className="w-full bg-transparent font-black text-xl text-orange-600 outline-none"
+                                                />
+                                                <span className="text-xs font-bold text-orange-400">F</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="text-right mt-2 text-sm font-bold text-gray-400">
+                                        Sous-total: <span className="text-gray-800">{formatMoney(item.price * item.qty)}</span>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    
+                    {cart.length > 0 && (
+                        <div className="p-4 bg-gray-800 border-t border-gray-700">
+                            <div className="flex justify-between items-center mb-4 text-white">
+                                <span className="font-bold text-gray-400">TOTAL À PAYER</span>
+                                <span className="text-3xl font-black text-green-400">{formatMoney(total)}</span>
+                            </div>
+                            <button onClick={onCheckout} className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-xl shadow-lg btn-press flex justify-center items-center gap-2">
+                                <i data-lucide="check-circle"></i> VALIDER LA VENTE
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
 
         const DashboardStats = ({ transactions, onClose }) => {
             const today = new Date().toLocaleDateString();
@@ -202,7 +274,7 @@
                             <div className="flex-1">🖨️ Services: <b>{formatMoney(salesService)}</b></div>
                         </div>
                     </div>
-                    <h3 className="font-bold text-gray-400 mb-3 uppercase text-sm">Transferts Mobile Money (Flux)</h3>
+                    <h3 className="font-bold text-gray-400 mb-3 uppercase text-sm">Mobile Money</h3>
                     <div className="space-y-3 mb-8">
                         {OPERATORS.map(op => {
                             const stats = getOpStats(op.name);
@@ -210,7 +282,7 @@
                             return (
                                 <div key={op.name} className="bg-white rounded-xl p-4 text-gray-800 shadow-sm">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <div className={`w-3 h-3 rounded-full ${op.class}`}></div>
+                                        <div className={`w-3 h-3 rounded-full ${op.color}`}></div>
                                         <span className="font-black uppercase">{op.name}</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
@@ -225,9 +297,8 @@
             );
         };
 
-        // --- COMPOSANT GESTION STOCK (AMELIORÉ) ---
         const AdminStock = ({ products, onAddStock, onNewProduct }) => {
-            const [mode, setMode] = useState('EXISTING'); // EXISTING ou NEW
+            const [mode, setMode] = useState('EXISTING'); 
             const [newProd, setNewProd] = useState({ name: '', price: '', stock: '' });
 
             return (
@@ -237,10 +308,8 @@
                             <button onClick={()=>setMode('EXISTING')} className={`flex-1 py-2 rounded-lg font-bold text-sm ${mode==='EXISTING'?'bg-white shadow text-purple-600':'text-gray-500'}`}>Arrivage Rapide</button>
                             <button onClick={()=>setMode('NEW')} className={`flex-1 py-2 rounded-lg font-bold text-sm ${mode==='NEW'?'bg-white shadow text-purple-600':'text-gray-500'}`}>Créer Nouveau</button>
                         </div>
-
                         {mode === 'EXISTING' ? (
                             <div>
-                                <h3 className="font-bold mb-4 text-gray-700">Entrée Stock (Produit Existant)</h3>
                                 <select id="p-select" className="w-full p-3 bg-gray-100 rounded-xl font-bold mb-2 text-gray-800">
                                     {products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
                                 </select>
@@ -254,25 +323,21 @@
                                 </div>
                             </div>
                         ) : (
-                            <div>
-                                <h3 className="font-bold mb-4 text-gray-700">Créer un produit hors catalogue</h3>
-                                <div className="space-y-3">
-                                    <input type="text" placeholder="Nom du produit" value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} className="w-full p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
-                                    <div className="flex gap-2">
-                                        <input type="number" placeholder="Prix Vente" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
-                                        <input type="number" placeholder="Stock Initial" value={newProd.stock} onChange={e=>setNewProd({...newProd, stock: e.target.value})} className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
-                                    </div>
-                                    <button onClick={() => {
-                                        if(newProd.name && newProd.price && newProd.stock) {
-                                            onNewProduct(newProd.name, parseInt(newProd.price), parseInt(newProd.stock));
-                                            setNewProd({ name: '', price: '', stock: '' });
-                                        } else alert("Remplissez tout !");
-                                    }} className="w-full bg-purple-600 text-white p-3 rounded-xl font-bold btn-press">CRÉER PRODUIT</button>
+                            <div className="space-y-3">
+                                <input type="text" placeholder="Nom du produit" value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} className="w-full p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
+                                <div className="flex gap-2">
+                                    <input type="number" placeholder="Prix Vente" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
+                                    <input type="number" placeholder="Stock Initial" value={newProd.stock} onChange={e=>setNewProd({...newProd, stock: e.target.value})} className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
                                 </div>
+                                <button onClick={() => {
+                                    if(newProd.name && newProd.price && newProd.stock) {
+                                        onNewProduct(newProd.name, parseInt(newProd.price), parseInt(newProd.stock));
+                                        setNewProd({ name: '', price: '', stock: '' });
+                                    } else alert("Remplissez tout !");
+                                }} className="w-full bg-purple-600 text-white p-3 rounded-xl font-bold btn-press">CRÉER PRODUIT</button>
                             </div>
                         )}
                     </div>
-                    
                     <div className="space-y-2 pb-20">
                         {products.map(p => (
                             <div key={p.id} className="bg-white/10 p-3 rounded-xl flex justify-between text-white border border-white/5">
@@ -285,34 +350,67 @@
             );
         };
 
+        // --- APP PRINCIPALE ---
         const App = () => {
             const [user, setUser] = useState(null);
             const [view, setView] = useState('HOME');
             const [showStats, setShowStats] = useState(false);
             const [products, setProducts] = useState(INIT_PRODUCTS);
             const [transactions, setTransactions] = useState([]);
+            
+            // ÉTAT DU PANIER
             const [cart, setCart] = useState([]);
+            const [showCart, setShowCart] = useState(false);
+
             const [search, setSearch] = useState("");
             const [selectedOp, setSelectedOp] = useState(null);
             const [serviceQty, setServiceQty] = useState(1);
 
-            useEffect(() => { lucide.createIcons(); }, [view, user, showStats, cart, products]);
+            useEffect(() => { lucide.createIcons(); }, [view, user, showStats, cart, products, showCart]);
 
             const handleLogout = () => { if(confirm("Changer d'utilisateur ?")) { setUser(null); setView('HOME'); } };
             const addTx = (cat, type, amount, desc, operator=null) => {
                 setTransactions([...transactions, { id: generateId(), date: Date.now(), cat, type, amount, desc, operator, by: user.name }]);
             };
 
-            const validateSale = () => {
+            // GESTION PANIER AVANCEE
+            const addToCart = (product) => {
+                const existing = cart.find(c => c.id === product.id);
+                if(existing) {
+                    // Si existe déjà, on incrémente juste la quantité
+                    updateCartItem(product.id, 'qty', existing.qty + 1);
+                } else {
+                    // Sinon on ajoute avec le prix catalogue par défaut
+                    setCart([...cart, { ...product, qty: 1 }]);
+                }
+                // Petit effet visuel
+                // alert(`${product.name} ajouté au panier`);
+            };
+
+            const updateCartItem = (id, field, value) => {
+                setCart(cart.map(c => c.id === id ? { ...c, [field]: value } : c));
+            };
+
+            const removeFromCart = (id) => {
+                setCart(cart.filter(c => c.id !== id));
+            };
+
+            const validateCartSale = () => {
                 const total = cart.reduce((a,c)=>a+(c.price*c.qty),0);
-                if(confirm(`Encaisser ${formatMoney(total)} ?`)) {
-                    setProducts(products.map(p => {
-                        const item = cart.find(c=>c.id===p.id);
-                        return item ? {...p, stock: p.stock - item.qty} : p;
-                    }));
-                    addTx('SHOP', 'SALE', total, `Vente ${cart.length} art.`);
+                if(confirm(`Valider la vente pour ${formatMoney(total)} ?`)) {
+                    // Mise à jour Stock
+                    const newProducts = products.map(p => {
+                        const inCart = cart.find(c => c.id === p.id);
+                        return inCart ? { ...p, stock: p.stock - inCart.qty } : p;
+                    });
+                    setProducts(newProducts);
+                    
+                    // Transaction
+                    addTx('SHOP', 'SALE', total, `Vente ${cart.length} articles (Modif Prix)`);
+                    
                     setCart([]);
-                    alert("Vente OK !");
+                    setShowCart(false);
+                    alert("✅ Vente enregistrée avec succès !");
                 }
             };
 
@@ -333,7 +431,6 @@
                 }
             };
 
-            // FONCTIONS STOCK ADMIN
             const handleAddStock = (id, qty) => {
                 setProducts(products.map(p => p.id===id ? {...p, stock: p.stock+qty} : p));
                 alert("Stock Mis à jour !");
@@ -347,9 +444,30 @@
 
             return (
                 <div className={`min-h-screen transition-colors duration-500 ${view === 'HOME' ? 'bg-home' : view === 'SHOP' ? 'bg-shop' : view === 'SERVICES' ? 'bg-service' : view === 'MONEY' ? 'bg-money' : 'bg-stock'}`}>
+                    
                     {showStats && <DashboardStats transactions={transactions} onClose={()=>setShowStats(false)} />}
-                    <Header title={view} user={user} onBack={view!=='HOME'?()=>setView('HOME'):null} onLogout={handleLogout} />
+                    
+                    {/* LE PANIER MODAL */}
+                    {showCart && (
+                        <CartModal 
+                            cart={cart} 
+                            updateCartItem={updateCartItem} 
+                            removeFromCart={removeFromCart} 
+                            onCheckout={validateCartSale} 
+                            onClose={()=>setShowCart(false)} 
+                        />
+                    )}
 
+                    <Header 
+                        title={view} 
+                        user={user} 
+                        onBack={view!=='HOME'?()=>setView('HOME'):null} 
+                        onLogout={handleLogout} 
+                        cartCount={view === 'SHOP' ? cart.reduce((a,c)=>a+c.qty,0) : undefined}
+                        onOpenCart={()=>setShowCart(true)}
+                    />
+
+                    {/* ACCUEIL */}
                     {view === 'HOME' && (
                         <div className="p-6 slide-up">
                             <div className="grid grid-cols-2 gap-4 mb-8">
@@ -364,22 +482,28 @@
                         </div>
                     )}
 
+                    {/* BOUTIQUE */}
                     {view === 'SHOP' && (
                         <div className="p-4 pb-24 slide-up">
-                            <input type="text" placeholder="Rechercher..." className="w-full p-4 rounded-xl glass mb-4 font-bold border-none outline-none" onChange={e=>setSearch(e.target.value)}/>
+                            <input type="text" placeholder="Rechercher produit..." className="w-full p-4 rounded-xl glass mb-4 font-bold border-none outline-none text-gray-800" onChange={e=>setSearch(e.target.value)}/>
                             <div className="space-y-3">
                                 {products.filter(p=>p.name.toLowerCase().includes(search.toLowerCase())).map(p => (
-                                    <button key={p.id} onClick={()=>{
-                                        const ex = cart.find(c=>c.id===p.id);
-                                        if(ex) setCart(cart.map(c=>c.id===p.id?{...c,qty:c.qty+1}:c));
-                                        else setCart([...cart,{...p,qty:1}]);
-                                    }} className="w-full glass p-3 flex justify-between items-center btn-press">
+                                    <button key={p.id} onClick={()=>addToCart(p)} className="w-full glass p-3 flex justify-between items-center btn-press text-gray-800">
                                         <div className="text-left"><div className="font-bold">{p.name}</div><div className={`text-xs ${p.stock<5?'text-red-500':'text-green-600'} font-bold`}>Stock: {p.stock}</div></div>
-                                        <div className="font-black">{formatMoney(p.price)}</div>
+                                        <div className="font-black text-lg">{formatMoney(p.price)}</div>
+                                        <div className="bg-orange-100 p-2 rounded-full text-orange-600"><i data-lucide="plus"></i></div>
                                     </button>
                                 ))}
                             </div>
-                            {cart.length > 0 && <button onClick={validateSale} className="fixed bottom-6 left-6 right-6 bg-white text-orange-600 p-4 rounded-2xl font-black text-lg shadow-2xl btn-press flex justify-between"><span>{cart.reduce((a,c)=>a+c.qty,0)} art.</span><span>ENCAISSER {formatMoney(cart.reduce((a,c)=>a+(c.price*c.qty),0))}</span></button>}
+                            
+                            {/* BOUTON FLOTTANT VOIR PANIER */}
+                            {cart.length > 0 && (
+                                <button onClick={()=>setShowCart(true)} className="fixed bottom-6 left-6 right-6 bg-orange-600 text-white p-4 rounded-2xl font-black text-lg shadow-2xl btn-press flex justify-between items-center z-40 border-2 border-orange-400">
+                                    <span className="bg-white text-orange-600 px-3 py-1 rounded-full">{cart.reduce((a,c)=>a+c.qty,0)} art.</span>
+                                    <span>VOIR PANIER ({formatMoney(cart.reduce((a,c)=>a+(c.price*c.qty),0))})</span>
+                                    <i data-lucide="shopping-cart"></i>
+                                </button>
+                            )}
                         </div>
                     )}
 
@@ -400,12 +524,12 @@
                             {!selectedOp ? (
                                 <div className="grid grid-cols-2 gap-4">
                                     {OPERATORS.map(op => (
-                                        <button key={op.name} onClick={()=>setSelectedOp(op)} className={`${op.class} h-32 rounded-2xl flex flex-col items-center justify-center gap-2 shadow-lg btn-press`}><span className="font-black text-lg uppercase text-center">{op.name}</span></button>
+                                        <button key={op.name} onClick={()=>setSelectedOp(op)} className={`${op.color} h-32 rounded-2xl flex flex-col items-center justify-center gap-2 shadow-lg btn-press`}><span className="font-black text-lg uppercase text-center text-white">{op.name}</span></button>
                                     ))}
                                 </div>
                             ) : (
                                 <div className="glass p-6 text-center animate-fade-in">
-                                    <h2 className={`text-2xl font-black uppercase mb-6 p-4 rounded-xl ${selectedOp.class}`}>{selectedOp.name}</h2>
+                                    <h2 className={`text-2xl font-black uppercase mb-6 p-4 rounded-xl text-white ${selectedOp.color}`}>{selectedOp.name}</h2>
                                     <div className="grid grid-cols-2 gap-4">
                                         <button onClick={()=>validateMoney('Dépôt')} className="bg-green-600 text-white p-6 rounded-2xl font-black btn-press text-lg">DÉPÔT<br/><span className="text-xs font-normal opacity-80">(Client donne)</span></button>
                                         <button onClick={()=>validateMoney('Retrait')} className="bg-red-600 text-white p-6 rounded-2xl font-black btn-press text-lg">RETRAIT<br/><span className="text-xs font-normal opacity-80">(Client reçoit)</span></button>
