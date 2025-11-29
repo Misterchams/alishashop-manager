@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ALISHASHOP Pro Max</title>
+    <title>ALISHASHOP SENEGAL</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -12,38 +13,32 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap');
-        body { font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; background: #111; color: white; }
+        body { font-family: 'Outfit', sans-serif; background: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
         
-        /* MIX DES COULEURS (Dégradés Vibrants) */
-        .bg-home { background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%); }
-        .bg-shop { background: linear-gradient(135deg, #FF9966 0%, #FF5E62 100%); }
-        .bg-service { background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%); }
-        .bg-money { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-        .bg-stock { background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%); }
-        .bg-login { background: linear-gradient(45deg, #FF416C, #FF4B2B); }
+        /* THEMES DES MENUS */
+        .bg-home { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); } /* Sombre Élégant */
+        .bg-shop { background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%); } /* Orange Boutique */
+        .bg-service { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); } /* Bleu Service */
+        .bg-money { background: linear-gradient(135deg, #059669 0%, #047857 100%); } /* Vert Finance */
+        .bg-stock { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); } /* Violet Admin */
 
-        /* Verre (Glassmorphism) */
+        /* COULEURS OPERATEURS SENEGAL */
+        .op-wave { background: #1DC4FF; color: white; }
+        .op-om { background: #FF7900; color: white; }
+        .op-free { background: #D60B51; color: white; }
+        .op-wizall { background: #0054A6; color: white; }
+
         .glass {
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-            color: #1f2937;
-        }
-        .glass-dark {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(12px);
             border-radius: 20px;
-            color: white;
+            color: #1e293b;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-
-        .btn-press:active { transform: scale(0.95); transition: 0.1s; }
-        .slide-up { animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Scroll invisible mais fonctionnel */
-        .no-scroll::-webkit-scrollbar { display: none; }
+        .btn-press:active { transform: scale(0.96); transition: 0.1s; }
+        .slide-up { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -52,31 +47,38 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- DONNÉES & UTILITAIRES ---
+        // --- UTILITAIRES ---
         const formatMoney = (n) => new Intl.NumberFormat('fr-FR').format(n) + ' F';
         const generateId = () => Math.random().toString(36).substr(2, 6).toUpperCase();
-        
-        // Données Exemples
-        const INIT_PRODUCTS = [
-            { id: 'P1', name: 'Clé USB 32Go', price: 4500, stock: 12 },
-            { id: 'P2', name: 'Câble iPhone', price: 2000, stock: 25 },
-            { id: 'P3', name: 'Rame Papier', price: 3500, stock: 8 },
-            { id: 'P4', name: 'Stylo', price: 100, stock: 100 }
+
+        // --- DONNEES ---
+        const OPERATORS = [
+            { name: 'Wave', class: 'op-wave' },
+            { name: 'Orange Money', class: 'op-om' },
+            { name: 'Free Money', class: 'op-free' },
+            { name: 'Wizall', class: 'op-wizall' }
         ];
+
+        const INIT_PRODUCTS = [
+            { id: 'P1', name: 'Clé USB 32Go', price: 4500, stock: 10 },
+            { id: 'P2', name: 'Câble iPhone', price: 2000, stock: 20 },
+            { id: 'P3', name: 'Rame Papier', price: 3500, stock: 5 }
+        ];
+
         const INIT_SERVICES = [
             { id: 'S1', name: 'Photocopie N&B', price: 50, icon: 'copy' },
             { id: 'S2', name: 'Photocopie Couleur', price: 100, icon: 'palette' },
             { id: 'S3', name: 'Reliure', price: 1000, icon: 'book' },
             { id: 'S4', name: 'Scanner', price: 200, icon: 'scan' },
-            { id: 'S5', name: 'Plastification', price: 500, icon: 'layers' }
+            { id: 'S5', name: 'Photo Identité', price: 2000, icon: 'camera' }
         ];
 
-        // --- ÉCRAN DE VERROUILLAGE (LOGIN) ---
+        // --- ECRAN LOGIN ---
         const Login = ({ onLogin }) => {
             const [role, setRole] = useState(null);
             const [pin, setPin] = useState("");
 
-            const handleNum = (n) => {
+            const handlePin = (n) => {
                 const next = pin + n;
                 setPin(next);
                 if (next.length === 4) {
@@ -87,42 +89,29 @@
             };
 
             return (
-                <div className="min-h-screen bg-login flex flex-col items-center justify-center p-6 text-white">
-                    <div className="w-24 h-24 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mb-6 shadow-2xl">
-                        <i data-lucide="store" className="w-12 h-12"></i>
-                    </div>
-                    <h1 className="text-4xl font-black mb-8 tracking-tight">ALISHASHOP</h1>
-
+                <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
+                    <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500 mb-8">ALISHASHOP</h1>
+                    
                     {!role ? (
-                        <div className="grid grid-cols-1 gap-4 w-full max-w-sm slide-up">
-                            <button onClick={()=>setRole('ADMIN')} className="glass p-6 flex items-center gap-4 hover:bg-white transition btn-press">
-                                <div className="bg-purple-100 p-3 rounded-full text-purple-600"><i data-lucide="crown" className="w-6 h-6"></i></div>
-                                <div className="text-left">
-                                    <h3 className="font-bold text-lg text-gray-800">Espace Patron</h3>
-                                    <p className="text-gray-500 text-sm">Gestion complète & Stock</p>
-                                </div>
+                        <div className="grid gap-4 w-full max-w-sm slide-up">
+                            <button onClick={()=>setRole('ADMIN')} className="glass p-6 flex items-center gap-4 btn-press">
+                                <div className="bg-purple-100 p-3 rounded-full"><i data-lucide="crown" className="text-purple-600"></i></div>
+                                <div className="text-left"><h3 className="font-bold">Espace Patron</h3><p className="text-xs text-gray-500">Gestion Totale</p></div>
                             </button>
-                            <button onClick={()=>setRole('STAFF')} className="glass p-6 flex items-center gap-4 hover:bg-white transition btn-press">
-                                <div className="bg-orange-100 p-3 rounded-full text-orange-600"><i data-lucide="user" className="w-6 h-6"></i></div>
-                                <div className="text-left">
-                                    <h3 className="font-bold text-lg text-gray-800">Espace Vendeur</h3>
-                                    <p className="text-gray-500 text-sm">Vente & Services</p>
-                                </div>
+                            <button onClick={()=>setRole('STAFF')} className="glass p-6 flex items-center gap-4 btn-press">
+                                <div className="bg-orange-100 p-3 rounded-full"><i data-lucide="user" className="text-orange-600"></i></div>
+                                <div className="text-left"><h3 className="font-bold">Espace Vendeur</h3><p className="text-xs text-gray-500">Caisse</p></div>
                             </button>
                         </div>
                     ) : (
                         <div className="w-full max-w-xs slide-up text-center">
-                            <p className="mb-6 font-bold text-lg">Code PIN pour {role === 'ADMIN' ? 'Patron' : 'Vendeur'}</p>
-                            <div className="flex justify-center gap-4 mb-6">
-                                {[0,1,2,3].map(i => <div key={i} className={`w-3 h-3 rounded-full ${pin.length > i ? 'bg-white' : 'bg-white/30'}`}></div>)}
-                            </div>
+                            <p className="text-white mb-6 font-bold">Code PIN {role}</p>
+                            <div className="flex justify-center gap-4 mb-6">{[0,1,2,3].map(i=><div key={i} className={`w-3 h-3 rounded-full ${pin.length>i?'bg-orange-500':'bg-gray-600'}`}></div>)}</div>
                             <div className="grid grid-cols-3 gap-4">
-                                {[1,2,3,4,5,6,7,8,9].map(n => (
-                                    <button key={n} onClick={()=>handleNum(n)} className="h-16 bg-white/20 rounded-xl font-bold text-2xl backdrop-blur active:bg-white/40">{n}</button>
+                                {[1,2,3,4,5,6,7,8,9,0].map(n => (
+                                    <button key={n} onClick={()=>handlePin(n)} className="h-16 bg-white/10 rounded-xl text-2xl font-bold text-white btn-press">{n}</button>
                                 ))}
-                                <button onClick={()=>setRole(null)} className="h-16 bg-red-500/40 rounded-xl flex items-center justify-center"><i data-lucide="arrow-left"></i></button>
-                                <button onClick={()=>handleNum(0)} className="h-16 bg-white/20 rounded-xl font-bold text-2xl backdrop-blur">0</button>
-                                <button onClick={()=>setPin(pin.slice(0,-1))} className="h-16 bg-white/10 rounded-xl flex items-center justify-center"><i data-lucide="delete"></i></button>
+                                <button onClick={()=>setRole(null)} className="h-16 bg-red-500/20 rounded-xl text-red-500 flex items-center justify-center"><i data-lucide="x"></i></button>
                             </div>
                         </div>
                     )}
@@ -130,79 +119,83 @@
             );
         };
 
-        // --- COMPOSANT HEADER UNIVERSEL ---
-        const Header = ({ title, onBack, onLogout, user, colorClass }) => (
-            <div className={`p-4 pt-6 sticky top-0 z-50 ${colorClass} shadow-lg rounded-b-3xl mb-4 flex justify-between items-center transition-all duration-500`}>
+        // --- COMPOSANT HEADER ---
+        const Header = ({ title, onBack, onLogout, user }) => (
+            <div className="p-4 pt-6 sticky top-0 z-40 bg-black/20 backdrop-blur shadow-sm flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
-                    {onBack && (
-                        <button onClick={onBack} className="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center btn-press">
-                            <i data-lucide="arrow-left" className="w-6 h-6 text-white"></i>
-                        </button>
-                    )}
-                    <div>
-                        <h2 className="font-black text-xl text-white tracking-wide">{title}</h2>
-                        <p className="text-xs text-white/70 font-bold uppercase">{user.name}</p>
-                    </div>
+                    {onBack && <button onClick={onBack} className="p-2 bg-white/20 rounded-full btn-press"><i data-lucide="arrow-left" className="text-white"></i></button>}
+                    <div><h2 className="font-black text-xl text-white uppercase">{title}</h2><p className="text-xs text-white/70 font-bold">{user.name}</p></div>
                 </div>
-                <button onClick={onLogout} className="w-10 h-10 bg-black/20 backdrop-blur rounded-full flex items-center justify-center text-white btn-press">
-                    <i data-lucide="repeat" className="w-5 h-5"></i>
-                </button>
+                <button onClick={onLogout} className="p-2 bg-white/10 rounded-full btn-press"><i data-lucide="refresh-cw" className="text-white"></i></button>
             </div>
         );
 
-        // --- MODULE TABLEAU DE BORD DÉTAILLÉ ---
-        const DetailedDashboard = ({ transactions, onClose }) => {
-            // Calculs
+        // --- TABLEAU DE BORD (STATS) ---
+        const DashboardStats = ({ transactions, onClose }) => {
             const today = new Date().toLocaleDateString();
             const todayTx = transactions.filter(t => new Date(t.date).toLocaleDateString() === today);
-            
-            const sales = todayTx.filter(t => t.type === 'SALE' && t.cat === 'SHOP').reduce((a,t)=>a+t.amount, 0);
-            const services = todayTx.filter(t => t.type === 'SALE' && t.cat === 'SERVICE').reduce((a,t)=>a+t.amount, 0);
-            const moneyIn = todayTx.filter(t => t.type === 'FINANCE' && t.cat === 'DEPOSIT').reduce((a,t)=>a+t.amount, 0);
-            const moneyOut = todayTx.filter(t => t.type === 'FINANCE' && t.cat === 'WITHDRAW').reduce((a,t)=>a+t.amount, 0);
+
+            // 1. REVENUS (CE QUI EST GAGNÉ)
+            const salesShop = todayTx.filter(t => t.cat === 'SHOP').reduce((a,t)=>a+t.amount, 0);
+            const salesService = todayTx.filter(t => t.cat === 'SERVICE').reduce((a,t)=>a+t.amount, 0);
+            const totalRevenue = salesShop + salesService;
+
+            // 2. MOBILE MONEY (FLUX)
+            const getOpStats = (opName) => {
+                const txs = todayTx.filter(t => t.cat === 'MONEY' && t.operator === opName);
+                return {
+                    depot: txs.filter(t => t.type === 'DEPOSIT').reduce((a,t)=>a+t.amount, 0),
+                    retrait: txs.filter(t => t.type === 'WITHDRAW').reduce((a,t)=>a+t.amount, 0)
+                };
+            };
 
             return (
-                <div className="fixed inset-0 bg-gray-900 z-50 overflow-y-auto p-4 animate-fade-in">
+                <div className="fixed inset-0 bg-gray-900/95 z-50 p-4 overflow-y-auto animate-fade-in">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-black text-white">Tableau de Bord</h2>
-                        <button onClick={onClose} className="p-2 bg-white/10 rounded-full text-white"><i data-lucide="x"></i></button>
+                        <h2 className="text-2xl font-black text-white">BILAN DU JOUR</h2>
+                        <button onClick={onClose} className="p-2 bg-gray-700 rounded-full"><i data-lucide="x"></i></button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="bg-orange-500 rounded-3xl p-5 text-white">
-                            <p className="text-xs font-bold opacity-70 mb-1">BOUTIQUE</p>
-                            <p className="text-2xl font-black">{formatMoney(sales)}</p>
+                    {/* SECTION REVENUS */}
+                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 mb-6 shadow-lg">
+                        <div className="flex items-center gap-2 mb-2 opacity-80">
+                            <i data-lucide="trending-up"></i>
+                            <span className="font-bold text-sm tracking-widest">CHIFFRE D'AFFAIRES (Ventes + Services)</span>
                         </div>
-                        <div className="bg-blue-500 rounded-3xl p-5 text-white">
-                            <p className="text-xs font-bold opacity-70 mb-1">SERVICES</p>
-                            <p className="text-2xl font-black">{formatMoney(services)}</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-800 rounded-3xl p-6 mb-6">
-                        <h3 className="font-bold text-gray-400 mb-4 flex items-center gap-2"><i data-lucide="smartphone"></i> MOBILE MONEY</h3>
-                        <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-700">
-                            <span className="text-green-400 font-bold">Dépôts (Entrées)</span>
-                            <span className="text-xl font-black text-white">{formatMoney(moneyIn)}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-red-400 font-bold">Retraits (Sorties)</span>
-                            <span className="text-xl font-black text-white">{formatMoney(moneyOut)}</span>
+                        <p className="text-4xl font-black text-white mb-4">{formatMoney(totalRevenue)}</p>
+                        <div className="flex gap-4 text-sm bg-black/20 p-3 rounded-xl">
+                            <div className="flex-1">🛍️ Boutique: <b>{formatMoney(salesShop)}</b></div>
+                            <div className="flex-1">🖨️ Services: <b>{formatMoney(salesService)}</b></div>
                         </div>
                     </div>
 
-                    <h3 className="font-bold text-white mb-3">Journal du jour</h3>
-                    <div className="space-y-2">
-                        {todayTx.length === 0 ? <p className="text-gray-500">Aucune activité</p> : 
-                        todayTx.slice().reverse().map(t => (
-                            <div key={t.id} className="bg-gray-800 p-3 rounded-xl flex justify-between items-center text-sm">
-                                <div>
-                                    <span className={`font-bold ${t.type==='FINANCE' ? 'text-green-400':'text-white'}`}>{t.desc}</span>
-                                    <div className="text-xs text-gray-500">{new Date(t.date).toLocaleTimeString()} par {t.by}</div>
+                    {/* SECTION MOBILE MONEY */}
+                    <h3 className="font-bold text-gray-400 mb-3 uppercase text-sm">Transferts Mobile Money (Flux)</h3>
+                    <div className="space-y-3 mb-8">
+                        {OPERATORS.map(op => {
+                            const stats = getOpStats(op.name);
+                            if(stats.depot === 0 && stats.retrait === 0) return null;
+                            return (
+                                <div key={op.name} className="bg-white rounded-xl p-4 text-gray-800 shadow-sm">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className={`w-3 h-3 rounded-full ${op.class}`}></div>
+                                        <span className="font-black uppercase">{op.name}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-green-50 p-2 rounded-lg border border-green-100">
+                                            <p className="text-xs text-green-600 font-bold">DÉPÔTS (Entrées)</p>
+                                            <p className="font-black text-lg">{formatMoney(stats.depot)}</p>
+                                        </div>
+                                        <div className="bg-red-50 p-2 rounded-lg border border-red-100">
+                                            <p className="text-xs text-red-600 font-bold">RETRAITS (Sorties)</p>
+                                            <p className="font-black text-lg">{formatMoney(stats.retrait)}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span className="font-mono font-bold text-white">{formatMoney(t.amount)}</span>
-                            </div>
-                        ))}
+                            );
+                        })}
+                        {/* Si aucun mouvement */}
+                        {todayTx.filter(t=>t.cat==='MONEY').length === 0 && <p className="text-center text-gray-600 italic">Aucun transfert aujourd'hui</p>}
                     </div>
                 </div>
             );
@@ -214,236 +207,180 @@
             const [view, setView] = useState('HOME');
             const [showStats, setShowStats] = useState(false);
             
-            // État des données
+            // DONNEES
             const [products, setProducts] = useState(INIT_PRODUCTS);
             const [transactions, setTransactions] = useState([]);
             
-            // États temporaires
+            // ETATS UI
             const [cart, setCart] = useState([]);
             const [search, setSearch] = useState("");
+            const [selectedOp, setSelectedOp] = useState(null);
             const [serviceQty, setServiceQty] = useState(1);
-            const [moneyOp, setMoneyOp] = useState(null);
 
-            useEffect(() => { lucide.createIcons(); }, [view, user, showStats]);
+            useEffect(() => { lucide.createIcons(); }, [view, user, showStats, cart]);
 
-            // Actions de Sécurité
+            // ACTIONS
             const handleLogout = () => {
-                if(confirm("🔒 Voulez-vous changer d'utilisateur ?")) {
-                    setUser(null);
-                    setView('HOME');
-                }
+                if(confirm("Changer d'utilisateur ?")) { setUser(null); setView('HOME'); }
             };
 
-            // Logique Métier
-            const addTx = (type, cat, amount, desc) => {
-                setTransactions([...transactions, { id: generateId(), date: Date.now(), type, cat, amount, desc, by: user.name }]);
+            const addTx = (cat, type, amount, desc, operator=null) => {
+                setTransactions([...transactions, { id: generateId(), date: Date.now(), cat, type, amount, desc, operator, by: user.name }]);
             };
 
-            const processSale = () => {
+            // VALIDATION VENTE
+            const validateSale = () => {
                 const total = cart.reduce((a,c)=>a+(c.price*c.qty),0);
                 if(confirm(`Encaisser ${formatMoney(total)} ?`)) {
-                    // Maj Stock
                     setProducts(products.map(p => {
                         const item = cart.find(c=>c.id===p.id);
                         return item ? {...p, stock: p.stock - item.qty} : p;
                     }));
-                    addTx('SALE', 'SHOP', total, `Vente ${cart.length} articles`);
+                    addTx('SHOP', 'SALE', total, `Vente ${cart.length} art.`);
                     setCart([]);
-                    alert("✅ Vente validée !");
+                    alert("Vente OK !");
                 }
             };
 
-            const processService = (s) => {
+            // VALIDATION SERVICE
+            const validateService = (s) => {
                 const total = s.price * serviceQty;
-                if(confirm(`Confirmer ${s.name} x${serviceQty} (${formatMoney(total)}) ?`)) {
-                    addTx('SALE', 'SERVICE', total, `${s.name} (x${serviceQty})`);
+                if(confirm(`Valider ${s.name} x${serviceQty} (${formatMoney(total)}) ?`)) {
+                    addTx('SERVICE', 'SALE', total, `${s.name} x${serviceQty}`);
                     setServiceQty(1);
-                    alert("✅ Service validé !");
+                    alert("Service OK !");
                 }
             };
 
-            const processStock = (id, qty) => {
-                setProducts(products.map(p => p.id === id ? {...p, stock: p.stock + parseInt(qty)} : p));
-                addTx('LOG', 'STOCK', 0, `Stock +${qty} sur ${id}`);
-                alert("📦 Stock mis à jour !");
+            // VALIDATION MOBILE MONEY
+            const validateMoney = (type) => {
+                const amount = prompt(`Montant du ${type} pour ${selectedOp.name} ?`);
+                if(amount) {
+                    addTx('MONEY', type === 'Dépôt' ? 'DEPOSIT' : 'WITHDRAW', parseInt(amount), `${selectedOp.name} ${type}`, selectedOp.name);
+                    alert("Opération Enregistrée !");
+                }
             };
 
-            if (!user) return <Login onLogin={setUser} />;
+            // STOCK ADMIN
+            const addToStock = () => {
+                const id = document.getElementById('p-select').value;
+                const qty = parseInt(document.getElementById('p-qty').value);
+                if(qty) {
+                    setProducts(products.map(p => p.id===id ? {...p, stock: p.stock+qty} : p));
+                    alert("Stock Mis à jour !");
+                }
+            };
+
+            if(!user) return <Login onLogin={setUser} />;
 
             return (
                 <div className={`min-h-screen transition-colors duration-500 
                     ${view === 'HOME' ? 'bg-home' : view === 'SHOP' ? 'bg-shop' : view === 'SERVICES' ? 'bg-service' : view === 'MONEY' ? 'bg-money' : 'bg-stock'}`}>
                     
-                    {showStats && <DetailedDashboard transactions={transactions} onClose={()=>setShowStats(false)} />}
+                    {showStats && <DashboardStats transactions={transactions} onClose={()=>setShowStats(false)} />}
 
-                    <Header 
-                        title={view === 'HOME' ? 'ACCUEIL' : view === 'SHOP' ? 'BOUTIQUE' : view === 'SERVICES' ? 'SERVICES' : view === 'MONEY' ? 'FINANCES' : 'STOCK'} 
-                        user={user} 
-                        onLogout={handleLogout}
-                        onBack={view !== 'HOME' ? () => setView('HOME') : null}
-                        colorClass={view === 'HOME' ? 'bg-white/10' : 'bg-black/20'}
-                    />
+                    <Header title={view} user={user} onBack={view!=='HOME'?()=>setView('HOME'):null} onLogout={handleLogout} />
 
-                    {/* VUE ACCUEIL (GRILLE DE NAVIGATION) */}
+                    {/* ACCUEIL */}
                     {view === 'HOME' && (
                         <div className="p-6 slide-up">
-                            <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="grid grid-cols-2 gap-4 mb-8">
                                 <button onClick={()=>setView('SHOP')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-orange-50">
-                                    <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center text-orange-600"><i data-lucide="shopping-bag" className="w-8 h-8"></i></div>
-                                    <span className="font-black text-gray-800">BOUTIQUE</span>
+                                    <div className="w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center text-white"><i data-lucide="shopping-bag"></i></div>
+                                    <span className="font-black">BOUTIQUE</span>
                                 </button>
                                 <button onClick={()=>setView('SERVICES')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-blue-50">
-                                    <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600"><i data-lucide="printer" className="w-8 h-8"></i></div>
-                                    <span className="font-black text-gray-800">SERVICES</span>
+                                    <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white"><i data-lucide="printer"></i></div>
+                                    <span className="font-black">SERVICES</span>
                                 </button>
                                 <button onClick={()=>setView('MONEY')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-green-50">
-                                    <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center text-green-600"><i data-lucide="smartphone" className="w-8 h-8"></i></div>
-                                    <span className="font-black text-gray-800">FINANCES</span>
+                                    <div className="w-14 h-14 bg-green-600 rounded-full flex items-center justify-center text-white"><i data-lucide="smartphone"></i></div>
+                                    <span className="font-black">TRANSFERT</span>
                                 </button>
                                 {user.role === 'ADMIN' ? (
                                     <button onClick={()=>setView('STOCK')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-purple-50">
-                                        <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center text-purple-600"><i data-lucide="package" className="w-8 h-8"></i></div>
-                                        <span className="font-black text-gray-800">STOCK</span>
+                                        <div className="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white"><i data-lucide="package"></i></div>
+                                        <span className="font-black">STOCK</span>
                                     </button>
                                 ) : (
-                                    <div className="glass-dark h-40 flex flex-col items-center justify-center gap-2 opacity-50">
-                                        <i data-lucide="lock" className="w-6 h-6"></i>
-                                        <span className="font-bold text-sm">STOCK (Admin)</span>
-                                    </div>
+                                    <div className="glass opacity-50 h-40 flex flex-col items-center justify-center"><i data-lucide="lock"></i></div>
                                 )}
                             </div>
-                            
-                            <button onClick={()=>setShowStats(true)} className="w-full glass p-4 flex items-center justify-between btn-press">
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-gray-800 text-white p-3 rounded-full"><i data-lucide="bar-chart-2"></i></div>
-                                    <div className="text-left">
-                                        <h3 className="font-bold text-lg text-gray-800">Tableau de Bord</h3>
-                                        <p className="text-gray-500 text-sm">Voir détails & Stats</p>
-                                    </div>
-                                </div>
-                                <i data-lucide="chevron-right" className="text-gray-400"></i>
+                            <button onClick={()=>setShowStats(true)} className="w-full glass p-5 flex justify-between items-center btn-press shadow-xl">
+                                <div className="flex items-center gap-3"><div className="bg-gray-800 text-white p-3 rounded-full"><i data-lucide="bar-chart-2"></i></div><span className="font-black text-lg">VOIR LE BILAN</span></div>
+                                <i data-lucide="chevron-right"></i>
                             </button>
                         </div>
                     )}
 
-                    {/* VUE BOUTIQUE */}
+                    {/* BOUTIQUE */}
                     {view === 'SHOP' && (
                         <div className="p-4 pb-24 slide-up">
-                            <input type="text" placeholder="Rechercher..." className="w-full p-4 rounded-2xl glass mb-4 font-bold border-none outline-none text-gray-800"
-                                onChange={e=>setSearch(e.target.value)} />
-                            
+                            <input type="text" placeholder="Rechercher..." className="w-full p-4 rounded-xl glass mb-4 font-bold border-none outline-none" onChange={e=>setSearch(e.target.value)}/>
                             <div className="space-y-3">
                                 {products.filter(p=>p.name.toLowerCase().includes(search.toLowerCase())).map(p => (
                                     <button key={p.id} onClick={()=>{
-                                        const exist = cart.find(c=>c.id===p.id);
-                                        if(exist) setCart(cart.map(c=>c.id===p.id ? {...c, qty: c.qty+1} : c));
-                                        else setCart([...cart, {...p, qty:1}]);
-                                    }} className="w-full glass p-3 flex justify-between items-center btn-press text-gray-800">
-                                        <div className="text-left">
-                                            <div className="font-bold">{p.name}</div>
-                                            <div className={`text-xs font-bold ${p.stock<5?'text-red-500':'text-green-600'}`}>Stock: {p.stock}</div>
-                                        </div>
-                                        <div className="font-black text-lg">{formatMoney(p.price)}</div>
+                                        const ex = cart.find(c=>c.id===p.id);
+                                        if(ex) setCart(cart.map(c=>c.id===p.id?{...c,qty:c.qty+1}:c));
+                                        else setCart([...cart,{...p,qty:1}]);
+                                    }} className="w-full glass p-3 flex justify-between items-center btn-press">
+                                        <div className="text-left"><div className="font-bold">{p.name}</div><div className={`text-xs ${p.stock<5?'text-red-500':'text-green-600'} font-bold`}>Stock: {p.stock}</div></div>
+                                        <div className="font-black">{formatMoney(p.price)}</div>
                                     </button>
                                 ))}
                             </div>
-                            
-                            {cart.length > 0 && (
-                                <button onClick={processSale} className="fixed bottom-6 left-6 right-6 bg-white text-orange-600 p-4 rounded-2xl font-black text-lg shadow-2xl btn-press flex justify-between items-center">
-                                    <span className="bg-orange-100 px-3 py-1 rounded-full">{cart.reduce((a,c)=>a+c.qty,0)} art.</span>
-                                    <span>ENCAISSER {formatMoney(cart.reduce((a,c)=>a+(c.price*c.qty),0))}</span>
-                                </button>
-                            )}
+                            {cart.length > 0 && <button onClick={validateSale} className="fixed bottom-6 left-6 right-6 bg-white text-orange-600 p-4 rounded-2xl font-black text-lg shadow-2xl btn-press flex justify-between"><span>{cart.reduce((a,c)=>a+c.qty,0)} art.</span><span>ENCAISSER {formatMoney(cart.reduce((a,c)=>a+(c.price*c.qty),0))}</span></button>}
                         </div>
                     )}
 
-                    {/* VUE SERVICES */}
+                    {/* SERVICES */}
                     {view === 'SERVICES' && (
                         <div className="p-4 grid grid-cols-2 gap-4 slide-up">
-                            {INIT_SERVICES.map(s => (
-                                <div key={s.id} className="glass p-4 flex flex-col items-center gap-2 text-gray-800">
-                                    <i data-lucide={s.icon} className="w-8 h-8 text-blue-600"></i>
-                                    <span className="font-bold text-center leading-tight">{s.name}</span>
-                                    <span className="text-sm text-blue-600 font-bold">{formatMoney(s.price)}</span>
-                                    <div className="flex items-center gap-2 mt-2 bg-gray-100 rounded-lg">
-                                        <button onClick={()=>processService(s)} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold btn-press">
-                                            Valider
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                            {/* Contrôle Quantité Global Simplifié */}
-                            <div className="col-span-2 glass p-4 flex justify-between items-center text-gray-800">
-                                <span className="font-bold">Quantité à appliquer :</span>
-                                <div className="flex items-center gap-4">
-                                    <button onClick={()=>setServiceQty(Math.max(1, serviceQty-1))} className="w-10 h-10 bg-gray-200 rounded-full font-bold text-xl">-</button>
-                                    <span className="text-2xl font-black">{serviceQty}</span>
-                                    <button onClick={()=>setServiceQty(serviceQty+1)} className="w-10 h-10 bg-gray-200 rounded-full font-bold text-xl">+</button>
-                                </div>
+                            <div className="col-span-2 glass p-4 flex justify-between items-center mb-2">
+                                <span className="font-bold">Quantité :</span>
+                                <div className="flex gap-4 items-center"><button onClick={()=>setServiceQty(Math.max(1,serviceQty-1))} className="w-10 h-10 bg-gray-200 rounded-full font-bold text-xl">-</button><span className="text-2xl font-black">{serviceQty}</span><button onClick={()=>setServiceQty(serviceQty+1)} className="w-10 h-10 bg-gray-200 rounded-full font-bold text-xl">+</button></div>
                             </div>
+                            {INIT_SERVICES.map(s => (
+                                <button key={s.id} onClick={()=>validateService(s)} className="glass p-4 flex flex-col items-center gap-2 btn-press">
+                                    <i data-lucide={s.icon} className="text-blue-600 w-8 h-8"></i><span className="font-bold text-center leading-tight">{s.name}</span><span className="text-blue-600 font-bold">{formatMoney(s.price)}</span>
+                                </button>
+                            ))}
                         </div>
                     )}
 
-                    {/* VUE FINANCE */}
+                    {/* TRANSFERT (COULEURS OFFICIELLES) */}
                     {view === 'MONEY' && (
-                        <div className="p-6 slide-up">
-                            <div className="grid grid-cols-2 gap-3 mb-6">
-                                {['Wave', 'Orange Money', 'Free', 'Wizall'].map(op => (
-                                    <button key={op} onClick={()=>setMoneyOp(op)} className={`p-4 rounded-2xl font-bold transition btn-press ${moneyOp===op ? 'bg-white text-green-600 shadow-xl' : 'bg-white/20 text-white'}`}>
-                                        {op}
-                                    </button>
-                                ))}
-                            </div>
-                            
-                            {moneyOp && (
-                                <div className="glass p-6 animate-fade-in">
-                                    <h3 className="font-black text-gray-800 text-center text-xl mb-4">{moneyOp}</h3>
+                        <div className="p-4 slide-up">
+                            {!selectedOp ? (
+                                <div className="grid grid-cols-2 gap-4">
+                                    {OPERATORS.map(op => (
+                                        <button key={op.name} onClick={()=>setSelectedOp(op)} className={`${op.class} h-32 rounded-2xl flex flex-col items-center justify-center gap-2 shadow-lg btn-press`}>
+                                            <span className="font-black text-lg uppercase text-center">{op.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="glass p-6 text-center animate-fade-in">
+                                    <h2 className={`text-2xl font-black uppercase mb-6 p-4 rounded-xl ${selectedOp.class}`}>{selectedOp.name}</h2>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <button onClick={()=>{
-                                            const amt = prompt("Montant du DÉPÔT (Client donne argent) ?");
-                                            if(amt) addTx('FINANCE', 'DEPOSIT', parseInt(amt), `${moneyOp} Dépôt`);
-                                        }} className="bg-green-500 text-white p-4 rounded-2xl font-bold btn-press">
-                                            DÉPÔT (Vert)
-                                        </button>
-                                        <button onClick={()=>{
-                                            const amt = prompt("Montant du RETRAIT (Client reçoit argent) ?");
-                                            if(amt) addTx('FINANCE', 'WITHDRAW', parseInt(amt), `${moneyOp} Retrait`);
-                                        }} className="bg-red-500 text-white p-4 rounded-2xl font-bold btn-press">
-                                            RETRAIT (Rouge)
-                                        </button>
+                                        <button onClick={()=>validateMoney('Dépôt')} className="bg-green-600 text-white p-6 rounded-2xl font-black btn-press text-lg">DÉPÔT<br/><span className="text-xs font-normal opacity-80">(Client donne cash)</span></button>
+                                        <button onClick={()=>validateMoney('Retrait')} className="bg-red-600 text-white p-6 rounded-2xl font-black btn-press text-lg">RETRAIT<br/><span className="text-xs font-normal opacity-80">(Client reçoit cash)</span></button>
                                     </div>
+                                    <button onClick={()=>setSelectedOp(null)} className="mt-8 text-gray-500 font-bold underline">Changer d'opérateur</button>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* VUE STOCK (ADMIN) */}
+                    {/* STOCK (ADMIN) */}
                     {view === 'STOCK' && (
                         <div className="p-4 slide-up">
                             <div className="glass p-6 mb-4">
-                                <h3 className="font-bold text-gray-800 mb-4">Saisie Facture Rapide</h3>
-                                <div className="flex gap-2 mb-2">
-                                    <select id="prodSelect" className="w-full p-3 bg-gray-100 rounded-xl font-bold text-gray-800">
-                                        {products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
-                                    </select>
-                                </div>
-                                <div className="flex gap-2">
-                                    <input id="qtyInput" type="number" placeholder="Qté" className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800" />
-                                    <button onClick={()=>{
-                                        const id = document.getElementById('prodSelect').value;
-                                        const qty = document.getElementById('qtyInput').value;
-                                        if(qty) processStock(id, qty);
-                                    }} className="w-1/2 bg-purple-600 text-white rounded-xl font-bold btn-press">AJOUTER</button>
-                                </div>
+                                <h3 className="font-bold mb-4">Entrée Stock Rapide</h3>
+                                <select id="p-select" className="w-full p-3 bg-gray-100 rounded-xl font-bold mb-2">{products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select>
+                                <div className="flex gap-2"><input id="p-qty" type="number" placeholder="Qté" className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold"/><button onClick={addToStock} className="w-1/2 bg-purple-600 text-white rounded-xl font-bold">AJOUTER</button></div>
                             </div>
-                            <div className="space-y-2">
-                                {products.map(p => (
-                                    <div key={p.id} className="bg-white/10 p-3 rounded-xl flex justify-between items-center text-white">
-                                        <span>{p.name}</span>
-                                        <span className="font-mono font-bold">{p.stock}</span>
-                                    </div>
-                                ))}
-                            </div>
+                            <div className="space-y-2">{products.map(p=><div key={p.id} className="bg-white/10 p-3 rounded-xl flex justify-between text-white"><span>{p.name}</span><span className="font-mono font-bold">{p.stock}</span></div>)}</div>
                         </div>
                     )}
                 </div>
