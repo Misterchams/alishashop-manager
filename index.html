@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ALISHASHOP SENEGAL</title>
+    <title>ALISHASHOP Catalogue Intégré</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -16,11 +16,11 @@
         body { font-family: 'Outfit', sans-serif; background: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
         
         /* THEMES DES MENUS */
-        .bg-home { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); } /* Sombre Élégant */
-        .bg-shop { background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%); } /* Orange Boutique */
-        .bg-service { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); } /* Bleu Service */
-        .bg-money { background: linear-gradient(135deg, #059669 0%, #047857 100%); } /* Vert Finance */
-        .bg-stock { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); } /* Violet Admin */
+        .bg-home { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); } 
+        .bg-shop { background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%); } 
+        .bg-service { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); } 
+        .bg-money { background: linear-gradient(135deg, #059669 0%, #047857 100%); } 
+        .bg-stock { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); } 
 
         /* COULEURS OPERATEURS SENEGAL */
         .op-wave { background: #1DC4FF; color: white; }
@@ -47,11 +47,9 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- UTILITAIRES ---
         const formatMoney = (n) => new Intl.NumberFormat('fr-FR').format(n) + ' F';
         const generateId = () => Math.random().toString(36).substr(2, 6).toUpperCase();
 
-        // --- DONNEES ---
         const OPERATORS = [
             { name: 'Wave', class: 'op-wave' },
             { name: 'Orange Money', class: 'op-om' },
@@ -59,10 +57,62 @@
             { name: 'Wizall', class: 'op-wizall' }
         ];
 
+        // --- CATALOGUE INTEGRÉ (Données extraites du PDF) ---
         const INIT_PRODUCTS = [
-            { id: 'P1', name: 'Clé USB 32Go', price: 4500, stock: 10 },
-            { id: 'P2', name: 'Câble iPhone', price: 2000, stock: 20 },
-            { id: 'P3', name: 'Rame Papier', price: 3500, stock: 5 }
+            { id: 'P01', name: 'Coque silicone Antichoc', price: 4500, stock: 20 },
+            { id: 'P02', name: 'Coque rigide Premium', price: 6000, stock: 15 },
+            { id: 'P03', name: 'Verre trempé 9H', price: 2000, stock: 50 },
+            { id: 'P04', name: 'Film hydrogel', price: 2500, stock: 30 },
+            { id: 'P05', name: 'Chargeur rapide 25W', price: 6000, stock: 20 },
+            { id: 'P06', name: 'Chargeur 33W Fast Charge', price: 7500, stock: 15 },
+            { id: 'P07', name: 'Chargeur voiture Double USB', price: 3500, stock: 15 },
+            { id: 'P08', name: 'Câble USB-C (1m)', price: 1500, stock: 40 },
+            { id: 'P09', name: 'Câble Lightning iPhone', price: 3000, stock: 25 },
+            { id: 'P10', name: 'Câble Micro-USB (1m)', price: 1000, stock: 30 },
+            { id: 'P11', name: 'Power Bank 10000mAh', price: 9000, stock: 20 },
+            { id: 'P12', name: 'Power Bank 20000mAh', price: 14000, stock: 10 },
+            { id: 'P13', name: 'Écouteurs filaires Jack', price: 2500, stock: 40 },
+            { id: 'P14', name: 'Écouteurs Bluetooth 5.0', price: 12000, stock: 25 },
+            { id: 'P15', name: 'Casque Bluetooth 12h', price: 18000, stock: 15 },
+            { id: 'P16', name: 'Mini enceinte BT 10W', price: 15000, stock: 15 },
+            { id: 'P17', name: 'Support voiture Grille', price: 4000, stock: 20 },
+            { id: 'P18', name: 'Support bureau Métal', price: 5000, stock: 15 },
+            { id: 'P19', name: 'Anneau support (Ring)', price: 1000, stock: 30 },
+            { id: 'P20', name: 'Batterie interne universelle', price: 4000, stock: 40 },
+            { id: 'P21', name: 'Bague magnétique MagSafe', price: 2000, stock: 25 },
+            { id: 'P22', name: 'Chargeur sans fil Qi 15W', price: 10000, stock: 10 },
+            { id: 'P23', name: 'Ventilateur téléphone', price: 7000, stock: 8 },
+            { id: 'P24', name: 'Lampe selfie LED', price: 4500, stock: 20 },
+            { id: 'P25', name: 'Trépied smartphone 1m', price: 9000, stock: 12 },
+            { id: 'P26', name: 'Carte mémoire 32Go', price: 5000, stock: 20 },
+            { id: 'P27', name: 'Carte mémoire 64Go', price: 8000, stock: 25 },
+            { id: 'P28', name: 'Adaptateur OTG USB-C', price: 1200, stock: 30 },
+            { id: 'P29', name: 'Adaptateur SIM Kit', price: 500, stock: 40 },
+            { id: 'P30', name: 'Aiguille extracteur SIM', price: 200, stock: 100 },
+            { id: 'P31', name: 'Brosse nettoyage Microfibre', price: 1500, stock: 35 },
+            { id: 'P32', name: 'Mini aspirateur USB', price: 12000, stock: 10 },
+            { id: 'P33', name: 'Clavier filaire USB', price: 9500, stock: 15 },
+            { id: 'P34', name: 'Clavier sans fil 2.4G', price: 12000, stock: 10 },
+            { id: 'P35', name: 'Souris filaire 1000DPI', price: 5000, stock: 20 },
+            { id: 'P36', name: 'Souris sans fil USB', price: 7500, stock: 15 },
+            { id: 'P37', name: 'Combo Clavier-Souris sans fil', price: 15000, stock: 10 },
+            { id: 'P38', name: 'Tapis de souris', price: 1500, stock: 30 },
+            { id: 'P39', name: 'Hub USB 3.0 (4 ports)', price: 8000, stock: 10 },
+            { id: 'P40', name: 'Clé USB 32Go 3.0', price: 6000, stock: 25 },
+            { id: 'P41', name: 'Clé USB 64Go 3.0', price: 8000, stock: 20 },
+            { id: 'P42', name: 'Disque Dur Externe 1To', price: 45000, stock: 8 },
+            { id: 'P43', name: 'Câble HDMI 1.5m', price: 3500, stock: 30 },
+            { id: 'P44', name: 'Câble HDMI 3m', price: 5000, stock: 20 },
+            { id: 'P45', name: 'Câble Alim PC (3 broches)', price: 2500, stock: 20 },
+            { id: 'P46', name: 'Chargeur PC Universel 65W', price: 18000, stock: 10 },
+            { id: 'P47', name: 'Ventilateur PC Portable', price: 12000, stock: 10 },
+            { id: 'P48', name: 'Adaptateur VGA-HDMI', price: 6000, stock: 15 },
+            { id: 'P49', name: 'Adaptateur USB-C HDMI 4K', price: 10000, stock: 12 },
+            { id: 'P50', name: 'Adaptateur USB-C Ethernet', price: 11000, stock: 10 },
+            { id: 'P51', name: 'Casque filaire PC Micro', price: 10000, stock: 12 },
+            { id: 'P52', name: 'Microphone USB Podcast', price: 15000, stock: 10 },
+            { id: 'P53', name: 'Webcam HD 1080p', price: 18000, stock: 8 },
+            { id: 'P54', name: 'Multiprise 6 ports', price: 12000, stock: 10 }
         ];
 
         const INIT_SERVICES = [
@@ -73,11 +123,9 @@
             { id: 'S5', name: 'Photo Identité', price: 2000, icon: 'camera' }
         ];
 
-        // --- ECRAN LOGIN ---
         const Login = ({ onLogin }) => {
             const [role, setRole] = useState(null);
             const [pin, setPin] = useState("");
-
             const handlePin = (n) => {
                 const next = pin + n;
                 setPin(next);
@@ -87,16 +135,14 @@
                     else { alert("Code Incorrect"); setPin(""); }
                 }
             };
-
             return (
                 <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
                     <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500 mb-8">ALISHASHOP</h1>
-                    
                     {!role ? (
                         <div className="grid gap-4 w-full max-w-sm slide-up">
                             <button onClick={()=>setRole('ADMIN')} className="glass p-6 flex items-center gap-4 btn-press">
                                 <div className="bg-purple-100 p-3 rounded-full"><i data-lucide="crown" className="text-purple-600"></i></div>
-                                <div className="text-left"><h3 className="font-bold">Espace Patron</h3><p className="text-xs text-gray-500">Gestion Totale</p></div>
+                                <div className="text-left"><h3 className="font-bold">Espace Patron</h3><p className="text-xs text-gray-500">Stock & Gestion</p></div>
                             </button>
                             <button onClick={()=>setRole('STAFF')} className="glass p-6 flex items-center gap-4 btn-press">
                                 <div className="bg-orange-100 p-3 rounded-full"><i data-lucide="user" className="text-orange-600"></i></div>
@@ -108,9 +154,7 @@
                             <p className="text-white mb-6 font-bold">Code PIN {role}</p>
                             <div className="flex justify-center gap-4 mb-6">{[0,1,2,3].map(i=><div key={i} className={`w-3 h-3 rounded-full ${pin.length>i?'bg-orange-500':'bg-gray-600'}`}></div>)}</div>
                             <div className="grid grid-cols-3 gap-4">
-                                {[1,2,3,4,5,6,7,8,9,0].map(n => (
-                                    <button key={n} onClick={()=>handlePin(n)} className="h-16 bg-white/10 rounded-xl text-2xl font-bold text-white btn-press">{n}</button>
-                                ))}
+                                {[1,2,3,4,5,6,7,8,9,0].map(n => (<button key={n} onClick={()=>handlePin(n)} className="h-16 bg-white/10 rounded-xl text-2xl font-bold text-white btn-press">{n}</button>))}
                                 <button onClick={()=>setRole(null)} className="h-16 bg-red-500/20 rounded-xl text-red-500 flex items-center justify-center"><i data-lucide="x"></i></button>
                             </div>
                         </div>
@@ -119,7 +163,6 @@
             );
         };
 
-        // --- COMPOSANT HEADER ---
         const Header = ({ title, onBack, onLogout, user }) => (
             <div className="p-4 pt-6 sticky top-0 z-40 bg-black/20 backdrop-blur shadow-sm flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
@@ -130,17 +173,12 @@
             </div>
         );
 
-        // --- TABLEAU DE BORD (STATS) ---
         const DashboardStats = ({ transactions, onClose }) => {
             const today = new Date().toLocaleDateString();
             const todayTx = transactions.filter(t => new Date(t.date).toLocaleDateString() === today);
-
-            // 1. REVENUS (CE QUI EST GAGNÉ)
             const salesShop = todayTx.filter(t => t.cat === 'SHOP').reduce((a,t)=>a+t.amount, 0);
             const salesService = todayTx.filter(t => t.cat === 'SERVICE').reduce((a,t)=>a+t.amount, 0);
             const totalRevenue = salesShop + salesService;
-
-            // 2. MOBILE MONEY (FLUX)
             const getOpStats = (opName) => {
                 const txs = todayTx.filter(t => t.cat === 'MONEY' && t.operator === opName);
                 return {
@@ -148,19 +186,15 @@
                     retrait: txs.filter(t => t.type === 'WITHDRAW').reduce((a,t)=>a+t.amount, 0)
                 };
             };
-
             return (
                 <div className="fixed inset-0 bg-gray-900/95 z-50 p-4 overflow-y-auto animate-fade-in">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-2xl font-black text-white">BILAN DU JOUR</h2>
                         <button onClick={onClose} className="p-2 bg-gray-700 rounded-full"><i data-lucide="x"></i></button>
                     </div>
-
-                    {/* SECTION REVENUS */}
                     <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 mb-6 shadow-lg">
                         <div className="flex items-center gap-2 mb-2 opacity-80">
-                            <i data-lucide="trending-up"></i>
-                            <span className="font-bold text-sm tracking-widest">CHIFFRE D'AFFAIRES (Ventes + Services)</span>
+                            <i data-lucide="trending-up"></i><span className="font-bold text-sm tracking-widest">CHIFFRE D'AFFAIRES</span>
                         </div>
                         <p className="text-4xl font-black text-white mb-4">{formatMoney(totalRevenue)}</p>
                         <div className="flex gap-4 text-sm bg-black/20 p-3 rounded-xl">
@@ -168,8 +202,6 @@
                             <div className="flex-1">🖨️ Services: <b>{formatMoney(salesService)}</b></div>
                         </div>
                     </div>
-
-                    {/* SECTION MOBILE MONEY */}
                     <h3 className="font-bold text-gray-400 mb-3 uppercase text-sm">Transferts Mobile Money (Flux)</h3>
                     <div className="space-y-3 mb-8">
                         {OPERATORS.map(op => {
@@ -182,53 +214,95 @@
                                         <span className="font-black uppercase">{op.name}</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-green-50 p-2 rounded-lg border border-green-100">
-                                            <p className="text-xs text-green-600 font-bold">DÉPÔTS (Entrées)</p>
-                                            <p className="font-black text-lg">{formatMoney(stats.depot)}</p>
-                                        </div>
-                                        <div className="bg-red-50 p-2 rounded-lg border border-red-100">
-                                            <p className="text-xs text-red-600 font-bold">RETRAITS (Sorties)</p>
-                                            <p className="font-black text-lg">{formatMoney(stats.retrait)}</p>
-                                        </div>
+                                        <div className="bg-green-50 p-2 rounded-lg border border-green-100"><p className="text-xs text-green-600 font-bold">DÉPÔTS</p><p className="font-black text-lg">{formatMoney(stats.depot)}</p></div>
+                                        <div className="bg-red-50 p-2 rounded-lg border border-red-100"><p className="text-xs text-red-600 font-bold">RETRAITS</p><p className="font-black text-lg">{formatMoney(stats.retrait)}</p></div>
                                     </div>
                                 </div>
                             );
                         })}
-                        {/* Si aucun mouvement */}
-                        {todayTx.filter(t=>t.cat==='MONEY').length === 0 && <p className="text-center text-gray-600 italic">Aucun transfert aujourd'hui</p>}
                     </div>
                 </div>
             );
         };
 
-        // --- APP PRINCIPALE ---
+        // --- COMPOSANT GESTION STOCK (AMELIORÉ) ---
+        const AdminStock = ({ products, onAddStock, onNewProduct }) => {
+            const [mode, setMode] = useState('EXISTING'); // EXISTING ou NEW
+            const [newProd, setNewProd] = useState({ name: '', price: '', stock: '' });
+
+            return (
+                <div className="p-4 slide-up">
+                    <div className="glass p-6 mb-4">
+                        <div className="flex bg-gray-100 rounded-xl p-1 mb-4">
+                            <button onClick={()=>setMode('EXISTING')} className={`flex-1 py-2 rounded-lg font-bold text-sm ${mode==='EXISTING'?'bg-white shadow text-purple-600':'text-gray-500'}`}>Arrivage Rapide</button>
+                            <button onClick={()=>setMode('NEW')} className={`flex-1 py-2 rounded-lg font-bold text-sm ${mode==='NEW'?'bg-white shadow text-purple-600':'text-gray-500'}`}>Créer Nouveau</button>
+                        </div>
+
+                        {mode === 'EXISTING' ? (
+                            <div>
+                                <h3 className="font-bold mb-4 text-gray-700">Entrée Stock (Produit Existant)</h3>
+                                <select id="p-select" className="w-full p-3 bg-gray-100 rounded-xl font-bold mb-2 text-gray-800">
+                                    {products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+                                </select>
+                                <div className="flex gap-2">
+                                    <input id="p-qty" type="number" placeholder="Qté reçue" className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
+                                    <button onClick={() => {
+                                        const id = document.getElementById('p-select').value;
+                                        const qty = parseInt(document.getElementById('p-qty').value);
+                                        if(qty) onAddStock(id, qty);
+                                    }} className="w-1/2 bg-purple-600 text-white rounded-xl font-bold btn-press">AJOUTER</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div>
+                                <h3 className="font-bold mb-4 text-gray-700">Créer un produit hors catalogue</h3>
+                                <div className="space-y-3">
+                                    <input type="text" placeholder="Nom du produit" value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} className="w-full p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
+                                    <div className="flex gap-2">
+                                        <input type="number" placeholder="Prix Vente" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
+                                        <input type="number" placeholder="Stock Initial" value={newProd.stock} onChange={e=>setNewProd({...newProd, stock: e.target.value})} className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
+                                    </div>
+                                    <button onClick={() => {
+                                        if(newProd.name && newProd.price && newProd.stock) {
+                                            onNewProduct(newProd.name, parseInt(newProd.price), parseInt(newProd.stock));
+                                            setNewProd({ name: '', price: '', stock: '' });
+                                        } else alert("Remplissez tout !");
+                                    }} className="w-full bg-purple-600 text-white p-3 rounded-xl font-bold btn-press">CRÉER PRODUIT</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="space-y-2 pb-20">
+                        {products.map(p => (
+                            <div key={p.id} className="bg-white/10 p-3 rounded-xl flex justify-between text-white border border-white/5">
+                                <span className="text-sm font-medium">{p.name}</span>
+                                <span className={`font-mono font-bold px-2 rounded ${p.stock<5?'bg-red-500':'bg-white/20'}`}>{p.stock}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
         const App = () => {
             const [user, setUser] = useState(null);
             const [view, setView] = useState('HOME');
             const [showStats, setShowStats] = useState(false);
-            
-            // DONNEES
             const [products, setProducts] = useState(INIT_PRODUCTS);
             const [transactions, setTransactions] = useState([]);
-            
-            // ETATS UI
             const [cart, setCart] = useState([]);
             const [search, setSearch] = useState("");
             const [selectedOp, setSelectedOp] = useState(null);
             const [serviceQty, setServiceQty] = useState(1);
 
-            useEffect(() => { lucide.createIcons(); }, [view, user, showStats, cart]);
+            useEffect(() => { lucide.createIcons(); }, [view, user, showStats, cart, products]);
 
-            // ACTIONS
-            const handleLogout = () => {
-                if(confirm("Changer d'utilisateur ?")) { setUser(null); setView('HOME'); }
-            };
-
+            const handleLogout = () => { if(confirm("Changer d'utilisateur ?")) { setUser(null); setView('HOME'); } };
             const addTx = (cat, type, amount, desc, operator=null) => {
                 setTransactions([...transactions, { id: generateId(), date: Date.now(), cat, type, amount, desc, operator, by: user.name }]);
             };
 
-            // VALIDATION VENTE
             const validateSale = () => {
                 const total = cart.reduce((a,c)=>a+(c.price*c.qty),0);
                 if(confirm(`Encaisser ${formatMoney(total)} ?`)) {
@@ -242,7 +316,6 @@
                 }
             };
 
-            // VALIDATION SERVICE
             const validateService = (s) => {
                 const total = s.price * serviceQty;
                 if(confirm(`Valider ${s.name} x${serviceQty} (${formatMoney(total)}) ?`)) {
@@ -252,7 +325,6 @@
                 }
             };
 
-            // VALIDATION MOBILE MONEY
             const validateMoney = (type) => {
                 const amount = prompt(`Montant du ${type} pour ${selectedOp.name} ?`);
                 if(amount) {
@@ -261,59 +333,37 @@
                 }
             };
 
-            // STOCK ADMIN
-            const addToStock = () => {
-                const id = document.getElementById('p-select').value;
-                const qty = parseInt(document.getElementById('p-qty').value);
-                if(qty) {
-                    setProducts(products.map(p => p.id===id ? {...p, stock: p.stock+qty} : p));
-                    alert("Stock Mis à jour !");
-                }
+            // FONCTIONS STOCK ADMIN
+            const handleAddStock = (id, qty) => {
+                setProducts(products.map(p => p.id===id ? {...p, stock: p.stock+qty} : p));
+                alert("Stock Mis à jour !");
+            };
+            const handleNewProduct = (name, price, stock) => {
+                setProducts([...products, { id: generateId(), name, price, stock }]);
+                alert("Produit Créé !");
             };
 
             if(!user) return <Login onLogin={setUser} />;
 
             return (
-                <div className={`min-h-screen transition-colors duration-500 
-                    ${view === 'HOME' ? 'bg-home' : view === 'SHOP' ? 'bg-shop' : view === 'SERVICES' ? 'bg-service' : view === 'MONEY' ? 'bg-money' : 'bg-stock'}`}>
-                    
+                <div className={`min-h-screen transition-colors duration-500 ${view === 'HOME' ? 'bg-home' : view === 'SHOP' ? 'bg-shop' : view === 'SERVICES' ? 'bg-service' : view === 'MONEY' ? 'bg-money' : 'bg-stock'}`}>
                     {showStats && <DashboardStats transactions={transactions} onClose={()=>setShowStats(false)} />}
-
                     <Header title={view} user={user} onBack={view!=='HOME'?()=>setView('HOME'):null} onLogout={handleLogout} />
 
-                    {/* ACCUEIL */}
                     {view === 'HOME' && (
                         <div className="p-6 slide-up">
                             <div className="grid grid-cols-2 gap-4 mb-8">
-                                <button onClick={()=>setView('SHOP')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-orange-50">
-                                    <div className="w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center text-white"><i data-lucide="shopping-bag"></i></div>
-                                    <span className="font-black">BOUTIQUE</span>
-                                </button>
-                                <button onClick={()=>setView('SERVICES')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-blue-50">
-                                    <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white"><i data-lucide="printer"></i></div>
-                                    <span className="font-black">SERVICES</span>
-                                </button>
-                                <button onClick={()=>setView('MONEY')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-green-50">
-                                    <div className="w-14 h-14 bg-green-600 rounded-full flex items-center justify-center text-white"><i data-lucide="smartphone"></i></div>
-                                    <span className="font-black">TRANSFERT</span>
-                                </button>
+                                <button onClick={()=>setView('SHOP')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-orange-50"><div className="w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center text-white"><i data-lucide="shopping-bag"></i></div><span className="font-black">BOUTIQUE</span></button>
+                                <button onClick={()=>setView('SERVICES')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-blue-50"><div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white"><i data-lucide="printer"></i></div><span className="font-black">SERVICES</span></button>
+                                <button onClick={()=>setView('MONEY')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-green-50"><div className="w-14 h-14 bg-green-600 rounded-full flex items-center justify-center text-white"><i data-lucide="smartphone"></i></div><span className="font-black">TRANSFERT</span></button>
                                 {user.role === 'ADMIN' ? (
-                                    <button onClick={()=>setView('STOCK')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-purple-50">
-                                        <div className="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white"><i data-lucide="package"></i></div>
-                                        <span className="font-black">STOCK</span>
-                                    </button>
-                                ) : (
-                                    <div className="glass opacity-50 h-40 flex flex-col items-center justify-center"><i data-lucide="lock"></i></div>
-                                )}
+                                    <button onClick={()=>setView('STOCK')} className="glass h-40 flex flex-col items-center justify-center gap-3 btn-press hover:bg-purple-50"><div className="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white"><i data-lucide="package"></i></div><span className="font-black">STOCK</span></button>
+                                ) : (<div className="glass opacity-50 h-40 flex flex-col items-center justify-center"><i data-lucide="lock"></i></div>)}
                             </div>
-                            <button onClick={()=>setShowStats(true)} className="w-full glass p-5 flex justify-between items-center btn-press shadow-xl">
-                                <div className="flex items-center gap-3"><div className="bg-gray-800 text-white p-3 rounded-full"><i data-lucide="bar-chart-2"></i></div><span className="font-black text-lg">VOIR LE BILAN</span></div>
-                                <i data-lucide="chevron-right"></i>
-                            </button>
+                            <button onClick={()=>setShowStats(true)} className="w-full glass p-5 flex justify-between items-center btn-press shadow-xl"><div className="flex items-center gap-3"><div className="bg-gray-800 text-white p-3 rounded-full"><i data-lucide="bar-chart-2"></i></div><span className="font-black text-lg">VOIR LE BILAN</span></div><i data-lucide="chevron-right"></i></button>
                         </div>
                     )}
 
-                    {/* BOUTIQUE */}
                     {view === 'SHOP' && (
                         <div className="p-4 pb-24 slide-up">
                             <input type="text" placeholder="Rechercher..." className="w-full p-4 rounded-xl glass mb-4 font-bold border-none outline-none" onChange={e=>setSearch(e.target.value)}/>
@@ -333,7 +383,6 @@
                         </div>
                     )}
 
-                    {/* SERVICES */}
                     {view === 'SERVICES' && (
                         <div className="p-4 grid grid-cols-2 gap-4 slide-up">
                             <div className="col-span-2 glass p-4 flex justify-between items-center mb-2">
@@ -341,30 +390,25 @@
                                 <div className="flex gap-4 items-center"><button onClick={()=>setServiceQty(Math.max(1,serviceQty-1))} className="w-10 h-10 bg-gray-200 rounded-full font-bold text-xl">-</button><span className="text-2xl font-black">{serviceQty}</span><button onClick={()=>setServiceQty(serviceQty+1)} className="w-10 h-10 bg-gray-200 rounded-full font-bold text-xl">+</button></div>
                             </div>
                             {INIT_SERVICES.map(s => (
-                                <button key={s.id} onClick={()=>validateService(s)} className="glass p-4 flex flex-col items-center gap-2 btn-press">
-                                    <i data-lucide={s.icon} className="text-blue-600 w-8 h-8"></i><span className="font-bold text-center leading-tight">{s.name}</span><span className="text-blue-600 font-bold">{formatMoney(s.price)}</span>
-                                </button>
+                                <button key={s.id} onClick={()=>validateService(s)} className="glass p-4 flex flex-col items-center gap-2 btn-press"><i data-lucide={s.icon} className="text-blue-600 w-8 h-8"></i><span className="font-bold text-center leading-tight">{s.name}</span><span className="text-blue-600 font-bold">{formatMoney(s.price)}</span></button>
                             ))}
                         </div>
                     )}
 
-                    {/* TRANSFERT (COULEURS OFFICIELLES) */}
                     {view === 'MONEY' && (
                         <div className="p-4 slide-up">
                             {!selectedOp ? (
                                 <div className="grid grid-cols-2 gap-4">
                                     {OPERATORS.map(op => (
-                                        <button key={op.name} onClick={()=>setSelectedOp(op)} className={`${op.class} h-32 rounded-2xl flex flex-col items-center justify-center gap-2 shadow-lg btn-press`}>
-                                            <span className="font-black text-lg uppercase text-center">{op.name}</span>
-                                        </button>
+                                        <button key={op.name} onClick={()=>setSelectedOp(op)} className={`${op.class} h-32 rounded-2xl flex flex-col items-center justify-center gap-2 shadow-lg btn-press`}><span className="font-black text-lg uppercase text-center">{op.name}</span></button>
                                     ))}
                                 </div>
                             ) : (
                                 <div className="glass p-6 text-center animate-fade-in">
                                     <h2 className={`text-2xl font-black uppercase mb-6 p-4 rounded-xl ${selectedOp.class}`}>{selectedOp.name}</h2>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <button onClick={()=>validateMoney('Dépôt')} className="bg-green-600 text-white p-6 rounded-2xl font-black btn-press text-lg">DÉPÔT<br/><span className="text-xs font-normal opacity-80">(Client donne cash)</span></button>
-                                        <button onClick={()=>validateMoney('Retrait')} className="bg-red-600 text-white p-6 rounded-2xl font-black btn-press text-lg">RETRAIT<br/><span className="text-xs font-normal opacity-80">(Client reçoit cash)</span></button>
+                                        <button onClick={()=>validateMoney('Dépôt')} className="bg-green-600 text-white p-6 rounded-2xl font-black btn-press text-lg">DÉPÔT<br/><span className="text-xs font-normal opacity-80">(Client donne)</span></button>
+                                        <button onClick={()=>validateMoney('Retrait')} className="bg-red-600 text-white p-6 rounded-2xl font-black btn-press text-lg">RETRAIT<br/><span className="text-xs font-normal opacity-80">(Client reçoit)</span></button>
                                     </div>
                                     <button onClick={()=>setSelectedOp(null)} className="mt-8 text-gray-500 font-bold underline">Changer d'opérateur</button>
                                 </div>
@@ -372,17 +416,7 @@
                         </div>
                     )}
 
-                    {/* STOCK (ADMIN) */}
-                    {view === 'STOCK' && (
-                        <div className="p-4 slide-up">
-                            <div className="glass p-6 mb-4">
-                                <h3 className="font-bold mb-4">Entrée Stock Rapide</h3>
-                                <select id="p-select" className="w-full p-3 bg-gray-100 rounded-xl font-bold mb-2">{products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select>
-                                <div className="flex gap-2"><input id="p-qty" type="number" placeholder="Qté" className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold"/><button onClick={addToStock} className="w-1/2 bg-purple-600 text-white rounded-xl font-bold">AJOUTER</button></div>
-                            </div>
-                            <div className="space-y-2">{products.map(p=><div key={p.id} className="bg-white/10 p-3 rounded-xl flex justify-between text-white"><span>{p.name}</span><span className="font-mono font-bold">{p.stock}</span></div>)}</div>
-                        </div>
-                    )}
+                    {view === 'STOCK' && <AdminStock products={products} onAddStock={handleAddStock} onNewProduct={handleNewProduct} />}
                 </div>
             );
         };
