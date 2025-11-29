@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ALISHASHOP Négoce</title>
+    <title>ALISHASHOP Final</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -33,23 +33,23 @@
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root">Chargement en cours...</div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const formatMoney = (n) => new Intl.NumberFormat('fr-FR').format(n) + ' F';
+        // --- UTILITAIRES ---
+        const formatMoney = (n) => new Intl.NumberFormat('fr-FR').format(n || 0) + ' F';
         const generateId = () => Math.random().toString(36).substr(2, 6).toUpperCase();
 
         const OPERATORS = [
-            { name: 'Wave', color: 'bg-sky-400' },
+            { name: 'Wave', color: 'bg-blue-400' },
             { name: 'Orange Money', color: 'bg-orange-500' },
             { name: 'Free Money', color: 'bg-red-600' },
             { name: 'Wizall', color: 'bg-blue-700' }
         ];
 
-        // --- CATALOGUE (Extrait du PDF) ---
-        [cite_start]// [cite: 1] Catalogue_Complet_Accessoires_Telephones_Informatique.pdf
+        // --- CATALOGUE DONNÉES (Fixé) ---
         const INIT_PRODUCTS = [
             { id: 'P01', name: 'Coque silicone Antichoc', price: 4500, stock: 20 },
             { id: 'P02', name: 'Coque rigide Premium', price: 6000, stock: 15 },
@@ -115,10 +115,12 @@
             { id: 'S5', name: 'Photo Identité', price: 2000, icon: 'camera' }
         ];
 
-        // --- COMPOSANTS LOGIN & HEADER ---
+        // --- COMPOSANTS INTERFACE ---
+
         const Login = ({ onLogin }) => {
             const [role, setRole] = useState(null);
             const [pin, setPin] = useState("");
+            
             const handlePin = (n) => {
                 const next = pin + n;
                 setPin(next);
@@ -128,6 +130,7 @@
                     else { alert("Code Incorrect"); setPin(""); }
                 }
             };
+            
             return (
                 <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
                     <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500 mb-8">ALISHASHOP</h1>
@@ -174,7 +177,6 @@
             </div>
         );
 
-        // --- COMPOSANT PANIER (AVEC MODIF PRIX) ---
         const CartModal = ({ cart, updateCartItem, removeFromCart, onCheckout, onClose }) => {
             const total = cart.reduce((a,c)=>a+(c.price*c.qty),0);
             
@@ -198,47 +200,31 @@
                                         <h3 className="font-bold text-lg leading-tight w-2/3">{item.name}</h3>
                                         <button onClick={()=>removeFromCart(item.id)} className="text-red-500 bg-red-50 p-1 rounded"><i data-lucide="trash-2" className="w-5 h-5"></i></button>
                                     </div>
-                                    
                                     <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-lg">
-                                        {/* Quantité */}
                                         <div className="flex items-center gap-2 bg-white rounded-lg border p-1 shadow-sm">
                                             <button onClick={()=>updateCartItem(item.id, 'qty', Math.max(1, item.qty-1))} className="w-8 h-8 bg-gray-200 rounded font-bold">-</button>
                                             <span className="font-black w-6 text-center">{item.qty}</span>
                                             <button onClick={()=>updateCartItem(item.id, 'qty', item.qty+1)} className="w-8 h-8 bg-gray-200 rounded font-bold">+</button>
                                         </div>
-                                        
-                                        {/* PRIX EDITABLE */}
                                         <div className="flex-1">
-                                            <label className="text-[10px] font-bold text-gray-400 uppercase">Prix Unitaire (Modifiable)</label>
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase">Prix Unitaire (Négociable)</label>
                                             <div className="flex items-center border-b-2 border-orange-200">
-                                                <input 
-                                                    type="number" 
-                                                    value={item.price} 
-                                                    onChange={(e)=>updateCartItem(item.id, 'price', parseInt(e.target.value) || 0)}
-                                                    className="w-full bg-transparent font-black text-xl text-orange-600 outline-none"
-                                                />
+                                                <input type="number" value={item.price} onChange={(e)=>updateCartItem(item.id, 'price', parseInt(e.target.value) || 0)} className="w-full bg-transparent font-black text-xl text-orange-600 outline-none" />
                                                 <span className="text-xs font-bold text-orange-400">F</span>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div className="text-right mt-2 text-sm font-bold text-gray-400">
-                                        Sous-total: <span className="text-gray-800">{formatMoney(item.price * item.qty)}</span>
                                     </div>
                                 </div>
                             ))
                         )}
                     </div>
-                    
                     {cart.length > 0 && (
                         <div className="p-4 bg-gray-800 border-t border-gray-700">
                             <div className="flex justify-between items-center mb-4 text-white">
-                                <span className="font-bold text-gray-400">TOTAL À PAYER</span>
+                                <span className="font-bold text-gray-400">TOTAL</span>
                                 <span className="text-3xl font-black text-green-400">{formatMoney(total)}</span>
                             </div>
-                            <button onClick={onCheckout} className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-xl shadow-lg btn-press flex justify-center items-center gap-2">
-                                <i data-lucide="check-circle"></i> VALIDER LA VENTE
-                            </button>
+                            <button onClick={onCheckout} className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-xl shadow-lg btn-press flex justify-center items-center gap-2"><i data-lucide="check-circle"></i> VALIDER</button>
                         </div>
                     )}
                 </div>
@@ -251,6 +237,7 @@
             const salesShop = todayTx.filter(t => t.cat === 'SHOP').reduce((a,t)=>a+t.amount, 0);
             const salesService = todayTx.filter(t => t.cat === 'SERVICE').reduce((a,t)=>a+t.amount, 0);
             const totalRevenue = salesShop + salesService;
+            
             const getOpStats = (opName) => {
                 const txs = todayTx.filter(t => t.cat === 'MONEY' && t.operator === opName);
                 return {
@@ -265,9 +252,7 @@
                         <button onClick={onClose} className="p-2 bg-gray-700 rounded-full"><i data-lucide="x"></i></button>
                     </div>
                     <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 mb-6 shadow-lg">
-                        <div className="flex items-center gap-2 mb-2 opacity-80">
-                            <i data-lucide="trending-up"></i><span className="font-bold text-sm tracking-widest">CHIFFRE D'AFFAIRES</span>
-                        </div>
+                        <div className="flex items-center gap-2 mb-2 opacity-80"><i data-lucide="trending-up"></i><span className="font-bold text-sm tracking-widest">CHIFFRE D'AFFAIRES</span></div>
                         <p className="text-4xl font-black text-white mb-4">{formatMoney(totalRevenue)}</p>
                         <div className="flex gap-4 text-sm bg-black/20 p-3 rounded-xl">
                             <div className="flex-1">🛍️ Boutique: <b>{formatMoney(salesShop)}</b></div>
@@ -281,10 +266,7 @@
                             if(stats.depot === 0 && stats.retrait === 0) return null;
                             return (
                                 <div key={op.name} className="bg-white rounded-xl p-4 text-gray-800 shadow-sm">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className={`w-3 h-3 rounded-full ${op.color}`}></div>
-                                        <span className="font-black uppercase">{op.name}</span>
-                                    </div>
+                                    <div className="flex items-center gap-2 mb-2"><div className={`w-3 h-3 rounded-full ${op.color}`}></div><span className="font-black uppercase">{op.name}</span></div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-green-50 p-2 rounded-lg border border-green-100"><p className="text-xs text-green-600 font-bold">DÉPÔTS</p><p className="font-black text-lg">{formatMoney(stats.depot)}</p></div>
                                         <div className="bg-red-50 p-2 rounded-lg border border-red-100"><p className="text-xs text-red-600 font-bold">RETRAITS</p><p className="font-black text-lg">{formatMoney(stats.retrait)}</p></div>
@@ -300,6 +282,10 @@
         const AdminStock = ({ products, onAddStock, onNewProduct }) => {
             const [mode, setMode] = useState('EXISTING'); 
             const [newProd, setNewProd] = useState({ name: '', price: '', stock: '' });
+            
+            // États locaux pour les formulaires (remplace getElementById)
+            const [selectedProdId, setSelectedProdId] = useState(products.length > 0 ? products[0].id : '');
+            const [addQty, setAddQty] = useState('');
 
             return (
                 <div className="p-4 slide-up">
@@ -310,15 +296,16 @@
                         </div>
                         {mode === 'EXISTING' ? (
                             <div>
-                                <select id="p-select" className="w-full p-3 bg-gray-100 rounded-xl font-bold mb-2 text-gray-800">
+                                <select value={selectedProdId} onChange={(e)=>setSelectedProdId(e.target.value)} className="w-full p-3 bg-gray-100 rounded-xl font-bold mb-2 text-gray-800">
                                     {products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
                                 </select>
                                 <div className="flex gap-2">
-                                    <input id="p-qty" type="number" placeholder="Qté reçue" className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
+                                    <input type="number" placeholder="Qté reçue" value={addQty} onChange={(e)=>setAddQty(e.target.value)} className="w-1/2 p-3 bg-gray-100 rounded-xl font-bold text-gray-800"/>
                                     <button onClick={() => {
-                                        const id = document.getElementById('p-select').value;
-                                        const qty = parseInt(document.getElementById('p-qty').value);
-                                        if(qty) onAddStock(id, qty);
+                                        if(addQty && selectedProdId) {
+                                            onAddStock(selectedProdId, parseInt(addQty));
+                                            setAddQty('');
+                                        }
                                     }} className="w-1/2 bg-purple-600 text-white rounded-xl font-bold btn-press">AJOUTER</button>
                                 </div>
                             </div>
@@ -350,7 +337,6 @@
             );
         };
 
-        // --- APP PRINCIPALE ---
         const App = () => {
             const [user, setUser] = useState(null);
             const [view, setView] = useState('HOME');
@@ -358,59 +344,46 @@
             const [products, setProducts] = useState(INIT_PRODUCTS);
             const [transactions, setTransactions] = useState([]);
             
-            // ÉTAT DU PANIER
+            // PANIER
             const [cart, setCart] = useState([]);
             const [showCart, setShowCart] = useState(false);
 
+            // UI
             const [search, setSearch] = useState("");
             const [selectedOp, setSelectedOp] = useState(null);
             const [serviceQty, setServiceQty] = useState(1);
 
-            useEffect(() => { lucide.createIcons(); }, [view, user, showStats, cart, products, showCart]);
+            useEffect(() => { 
+                try { if(window.lucide) window.lucide.createIcons(); } catch(e){} 
+            });
 
             const handleLogout = () => { if(confirm("Changer d'utilisateur ?")) { setUser(null); setView('HOME'); } };
             const addTx = (cat, type, amount, desc, operator=null) => {
                 setTransactions([...transactions, { id: generateId(), date: Date.now(), cat, type, amount, desc, operator, by: user.name }]);
             };
 
-            // GESTION PANIER AVANCEE
             const addToCart = (product) => {
                 const existing = cart.find(c => c.id === product.id);
-                if(existing) {
-                    // Si existe déjà, on incrémente juste la quantité
-                    updateCartItem(product.id, 'qty', existing.qty + 1);
-                } else {
-                    // Sinon on ajoute avec le prix catalogue par défaut
-                    setCart([...cart, { ...product, qty: 1 }]);
-                }
-                // Petit effet visuel
-                // alert(`${product.name} ajouté au panier`);
+                if(existing) updateCartItem(product.id, 'qty', existing.qty + 1);
+                else setCart([...cart, { ...product, qty: 1 }]);
             };
-
+            
             const updateCartItem = (id, field, value) => {
                 setCart(cart.map(c => c.id === id ? { ...c, [field]: value } : c));
             };
 
-            const removeFromCart = (id) => {
-                setCart(cart.filter(c => c.id !== id));
-            };
+            const removeFromCart = (id) => setCart(cart.filter(c => c.id !== id));
 
             const validateCartSale = () => {
                 const total = cart.reduce((a,c)=>a+(c.price*c.qty),0);
-                if(confirm(`Valider la vente pour ${formatMoney(total)} ?`)) {
-                    // Mise à jour Stock
-                    const newProducts = products.map(p => {
+                if(confirm(`Valider vente : ${formatMoney(total)} ?`)) {
+                    setProducts(products.map(p => {
                         const inCart = cart.find(c => c.id === p.id);
                         return inCart ? { ...p, stock: p.stock - inCart.qty } : p;
-                    });
-                    setProducts(newProducts);
-                    
-                    // Transaction
-                    addTx('SHOP', 'SALE', total, `Vente ${cart.length} articles (Modif Prix)`);
-                    
+                    }));
+                    addTx('SHOP', 'SALE', total, `Vente ${cart.length} art.`);
                     setCart([]);
                     setShowCart(false);
-                    alert("✅ Vente enregistrée avec succès !");
                 }
             };
 
@@ -419,15 +392,16 @@
                 if(confirm(`Valider ${s.name} x${serviceQty} (${formatMoney(total)}) ?`)) {
                     addTx('SERVICE', 'SALE', total, `${s.name} x${serviceQty}`);
                     setServiceQty(1);
-                    alert("Service OK !");
+                    alert("Service OK");
                 }
             };
 
             const validateMoney = (type) => {
-                const amount = prompt(`Montant du ${type} pour ${selectedOp.name} ?`);
+                const amount = prompt(`Montant ${type} pour ${selectedOp.name} ?`);
                 if(amount) {
                     addTx('MONEY', type === 'Dépôt' ? 'DEPOSIT' : 'WITHDRAW', parseInt(amount), `${selectedOp.name} ${type}`, selectedOp.name);
-                    alert("Opération Enregistrée !");
+                    alert("Opération OK");
+                    setSelectedOp(null);
                 }
             };
 
@@ -446,28 +420,10 @@
                 <div className={`min-h-screen transition-colors duration-500 ${view === 'HOME' ? 'bg-home' : view === 'SHOP' ? 'bg-shop' : view === 'SERVICES' ? 'bg-service' : view === 'MONEY' ? 'bg-money' : 'bg-stock'}`}>
                     
                     {showStats && <DashboardStats transactions={transactions} onClose={()=>setShowStats(false)} />}
-                    
-                    {/* LE PANIER MODAL */}
-                    {showCart && (
-                        <CartModal 
-                            cart={cart} 
-                            updateCartItem={updateCartItem} 
-                            removeFromCart={removeFromCart} 
-                            onCheckout={validateCartSale} 
-                            onClose={()=>setShowCart(false)} 
-                        />
-                    )}
+                    {showCart && <CartModal cart={cart} updateCartItem={updateCartItem} removeFromCart={removeFromCart} onCheckout={validateCartSale} onClose={()=>setShowCart(false)} />}
 
-                    <Header 
-                        title={view} 
-                        user={user} 
-                        onBack={view!=='HOME'?()=>setView('HOME'):null} 
-                        onLogout={handleLogout} 
-                        cartCount={view === 'SHOP' ? cart.reduce((a,c)=>a+c.qty,0) : undefined}
-                        onOpenCart={()=>setShowCart(true)}
-                    />
+                    <Header title={view} user={user} onBack={view!=='HOME'?()=>setView('HOME'):null} onLogout={handleLogout} cartCount={view === 'SHOP' ? cart.reduce((a,c)=>a+c.qty,0) : undefined} onOpenCart={()=>setShowCart(true)} />
 
-                    {/* ACCUEIL */}
                     {view === 'HOME' && (
                         <div className="p-6 slide-up">
                             <div className="grid grid-cols-2 gap-4 mb-8">
@@ -482,7 +438,6 @@
                         </div>
                     )}
 
-                    {/* BOUTIQUE */}
                     {view === 'SHOP' && (
                         <div className="p-4 pb-24 slide-up">
                             <input type="text" placeholder="Rechercher produit..." className="w-full p-4 rounded-xl glass mb-4 font-bold border-none outline-none text-gray-800" onChange={e=>setSearch(e.target.value)}/>
@@ -495,13 +450,10 @@
                                     </button>
                                 ))}
                             </div>
-                            
-                            {/* BOUTON FLOTTANT VOIR PANIER */}
                             {cart.length > 0 && (
                                 <button onClick={()=>setShowCart(true)} className="fixed bottom-6 left-6 right-6 bg-orange-600 text-white p-4 rounded-2xl font-black text-lg shadow-2xl btn-press flex justify-between items-center z-40 border-2 border-orange-400">
                                     <span className="bg-white text-orange-600 px-3 py-1 rounded-full">{cart.reduce((a,c)=>a+c.qty,0)} art.</span>
-                                    <span>VOIR PANIER ({formatMoney(cart.reduce((a,c)=>a+(c.price*c.qty),0))})</span>
-                                    <i data-lucide="shopping-cart"></i>
+                                    <span>PANIER ({formatMoney(cart.reduce((a,c)=>a+(c.price*c.qty),0))})</span>
                                 </button>
                             )}
                         </div>
